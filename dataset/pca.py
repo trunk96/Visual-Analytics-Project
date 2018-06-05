@@ -30,8 +30,8 @@ list_of_attributes=["SEX", "EDUCATION", "MARRIAGE", "AGE","LIMIT_BAL", "BILL_AMT
 for elem in list_of_attributes:
     midDf=pd.concat([midDf, data[[elem]]], axis=1)
 finalDf = pd.concat([midDf, data[['default payment next month']]], axis = 1)
-
-finalDf.to_csv("pca.csv", sep=';')
+finalDf=finalDf.rename(index=str, columns={"default payment next month": "target"})
+finalDf.to_csv("pca.csv", sep=',', index=False)
 
 fig = plt.figure(figsize = (8,8))
 ax = fig.add_subplot(1,1,1)
@@ -41,7 +41,7 @@ ax.set_title('2 component PCA', fontsize = 20)
 targets = [0, 1]
 colors = ['g', 'r']
 for target, color in zip(targets,colors):
-    indicesToKeep = finalDf['default payment next month'] == target
+    indicesToKeep = finalDf['target'] == target
     ax.scatter(finalDf.loc[indicesToKeep, 'X1']
                , finalDf.loc[indicesToKeep, 'X2']
                , c = color

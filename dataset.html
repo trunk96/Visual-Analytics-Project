@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+
+<!-- Mirrored from mbostock.github.com/d3/ex/choropleth.html by HTTrack Website Copier/3.x [XR&CO'2010], Sat, 04 Feb 2012 16:43:26 GMT -->
+	<head>
+		<meta http-equiv="content-type" content="text/html;charset=utf-8">
+		<title>Loading data</title>
+		<script type="text/javascript" src="d3.min.js"></script>
+		<style type="text/css">
+    div.tooltip {
+    position: absolute;
+    text-align: center;
+    width: 60px;
+    height: 28px;
+    padding: 2px;
+    font: 12px sans-serif;
+    background: lightblue;
+    border: 0px;
+    border-radius: 8px;
+    pointer-events: none;
+}
+
+		</style>
+	</head>
+	<body>
+		<div align="center">
+			<h1>Loading data</h1>
+		</div>
+		<div id='chart' align="center">
+			<svg class="svg_area" width="1000" height="1000">
+			</svg>
+		</div>
+	</body>
+
+	<script type="text/javascript">
+    var div = d3.select("body").append("div")
+    .attr("class", "tooltip")
+    .style("opacity", 0);
+
+		var data=[];
+		d3.csv("pca.csv").then(function(rows){
+          var x = d3.scaleLinear()
+                  .domain(d3.extent(rows, function(d){return +d.X1}))
+                  .range([10,990]);
+          var y = d3.scaleLinear()
+                  .domain(d3.extent(rows, function(d){return +d.X2}))
+                  .range([10,990]);
+						var svg=d3.select("svg");
+						svg.selectAll("circle").data(rows).enter()
+							.append("circle")
+								.attr("cx",function(d){
+                  return x(d.X1);})
+								.attr("cy",function(d){
+                  return 1000-x(d.X2);})
+								.attr("r","2")
+						        .attr("fill", function(d){
+                      if (d.target==0){
+                        return "green";
+                      }
+                      else{
+                        return "red";
+                      }
+                    })
+                  .attr("opacity", function(d){
+                    if (d.target==0){
+                      return "0.2";
+                    }
+                    else{
+                      return "1";
+                    }
+                  })
+                  .attr("identifier", function(d){
+                    console.log(d.ID)
+                    return d.ID;
+                  })
+                  .on("mouseover", function(d){
+                    div.transition()
+                            .duration(200)
+                            .style("opacity", .9);
+                        div.html(d.ID)
+                            .style("left", (d3.event.pageX) + "px")
+                            .style("top", (d3.event.pageY - 28) + "px");
+                        })
+                    .on("mouseout", function(d){
+                      div.transition()
+                            .duration(500)
+                            .style("opacity", 0);
+                    });
+					}
+		       );
+
+
+	</script>
+</html>
