@@ -23,6 +23,12 @@
 		body{
 			background-color: white;
 		}
+		.selected{
+			opacity: 1;
+		}
+		.unselected{
+			opacity: 0.1;
+		}
 		.yaxis line{
   		stroke: black;
 		}
@@ -58,7 +64,7 @@
 <script type="text/javascript">
 var height=550;
 var width=550;
-
+var color = d3.scaleOrdinal(d3.schemeCategory10);
 
 	var div = d3.select("body").append("div")
 		.attr("class", "tooltip")
@@ -68,10 +74,10 @@ var width=550;
 	d3.csv("pca.csv").then(function(rows) {
 		rows=rows.sort(function(a,b){ return d3.ascending(a.target, b.target);});
 		var x = d3.scaleLinear()
-			.range([0, width]);
+			.range([0, width-10]);
 
 		var y = d3.scaleLinear()
-			.range([height, 0]);
+			.range([height-10, 0]);
 		var xAxis = d3.axisBottom(x);
 		var yAxis = d3.axisLeft(y);
 		var x = d3.scaleLinear()
@@ -100,11 +106,7 @@ var width=550;
 			})
 			.attr("r", "2")
 			.attr("fill", function(d) {
-				if (d.target == 0) {
-					return "green";
-				} else {
-					return "red";
-				}
+				return color(d.target)
 			})
 			.attr("opacity", function(d) {
 				if (d.target == 0) {
@@ -151,7 +153,42 @@ var width=550;
 			.attr("dy", ".71em")
 			.style("text-anchor", "start")
 			.text("X2");
+
+			var legend = d3.select("svg").selectAll(".legend")
+					 .data(color.domain())
+					 .enter().append("g")
+					 .classed("legend", true)
+					 .attr("transform", function(d, i) {
+							 return "translate(0," + i * 20 + ")";
+					 })
+					 .attr("class", "selected");
+			legend.append("rect")
+				    .attr("x", width -140)
+						.attr("y", 20)
+				    .attr("width", 12)
+				    .attr("height", 12)
+				    .style("fill", color)
+						.on("mousedown", function(t){
+							d3.selectAll(".selected").attr("class", "unselected");
+						})
+						.on("mouseup", function(t){
+							d3.select(this).attr("class", "selected");
+						});
+			legend.append("text")
+					   .attr("x", width - 116)
+						 .attr("y", 20)
+					   .attr("dy", ".65em")
+					   .text(function(d) {
+					    	if (d==0){
+									return "Correct";
+								}
+								else{
+									return "Default";
+								}
+					    });
+
 	});
+
 </script>
 
 </html>

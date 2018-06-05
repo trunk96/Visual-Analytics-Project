@@ -10,7 +10,10 @@ data = pd.io.parsers.read_csv('dataset.csv',
     );
 
 from sklearn.preprocessing import StandardScaler
-features = ["LIMIT_BAL", "BILL_AMT1", "BILL_AMT2", "BILL_AMT3", "BILL_AMT4", "BILL_AMT5", "BILL_AMT6", "PAY_AMT1", "PAY_AMT2", "PAY_AMT3", "PAY_AMT4", "PAY_AMT5", "PAY_AMT6"]
+features = ["AGE", "LIMIT_BAL", "BILL_AMT1", "BILL_AMT2", "BILL_AMT3", "BILL_AMT4", "BILL_AMT5", "BILL_AMT6", "PAY_AMT1", "PAY_AMT2", "PAY_AMT3", "PAY_AMT4", "PAY_AMT5", "PAY_AMT6"]
+#features = ["AGE", "LIMIT_BAL", "BILL_AMT1", "PAY_AMT1"]
+
+
 # Separating out the features
 x = data.loc[:, features].values
 # Separating out the target
@@ -26,7 +29,7 @@ principalComponents = pca.fit_transform(x)
 #principalComponents=mds.fit_transform(x)
 principalDf = pd.DataFrame(data = principalComponents, columns = ['X1', 'X2'])
 midDf=pd.concat([principalDf, data[["ID"]]], axis=1)
-list_of_attributes=["SEX", "EDUCATION", "MARRIAGE", "AGE","LIMIT_BAL", "BILL_AMT1", "BILL_AMT2", "BILL_AMT3", "BILL_AMT4", "BILL_AMT5", "BILL_AMT6", "PAY_AMT1", "PAY_AMT2", "PAY_AMT3", "PAY_AMT4", "PAY_AMT5", "PAY_AMT6"]
+list_of_attributes=["SEX", "EDUCATION", "MARRIAGE","LIMIT_BAL", "BILL_AMT1", "BILL_AMT2", "BILL_AMT3", "BILL_AMT4", "BILL_AMT5", "BILL_AMT6", "PAY_AMT1", "PAY_AMT2", "PAY_AMT3", "PAY_AMT4", "PAY_AMT5", "PAY_AMT6"]
 for elem in list_of_attributes:
     midDf=pd.concat([midDf, data[[elem]]], axis=1)
 finalDf = pd.concat([midDf, data[['default payment next month']]], axis = 1)
