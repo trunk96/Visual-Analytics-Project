@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+
+<!-- Mirrored from mbostock.github.com/d3/ex/choropleth.html by HTTrack Website Copier/3.x [XR&CO'2010], Sat, 04 Feb 2012 16:43:26 GMT -->
+
+<head>
+	<meta http-equiv="content-type" content="text/html;charset=utf-8">
+	<title>Loading data</title>
+	<script type="text/javascript" src="d3.min.js"></script>
+	<style type="text/css">
+		div.tooltip {
+			position: absolute;
+			text-align: center;
+			width: 60px;
+			height: 28px;
+			padding: 2px;
+			font: 12px sans-serif;
+			background: lightblue;
+			border: 0px;
+			border-radius: 8px;
+			pointer-events: none;
+		}
+		body{
+			background-color: white;
+		}
+		.selected{
+			opacity: 1;
+		}
+		.unselected{
+			opacity: 0.1;
+		}
+		.yaxis line{
+  		stroke: black;
+		}
+
+		.yaxis path{
+  		stroke: black;
+		}
+		.xaxis line{
+  		stroke: black;
+		}
+
+		.xaxis path{
+  		stroke: black;
+		}
+
+		.xaxis text{
+		  fill: black;
+		}
+		.yaxis text{
+			fill: black;
+		}
+	</style>
+</head>
+
+<body>
+	<div align="center">
+		<h1>Loading data</h1>
+	</div>
+	<div id='chart' align="center">
+	</div>
+</body>
+
+<script type="text/javascript">
+var height=550;
+var width=550;
+var color = d3.scaleOrdinal(d3.schemeCategory10);
+
+	var div = d3.select("body").append("div")
+		.attr("class", "tooltip")
+		.style("opacity", 0);
+
+	var data = [];
+	d3.csv("pca.csv").then(function(rows) {
+		
+		var x = d3.scaleLinear()
+			.range([0, width-10]);
+		var y = d3.scaleLinear()
+			.range([height-10, 0]);
+		var xAxis = d3.axisBottom(x);
+		var yAxis = d3.axisLeft(y);
+		
+		var x = d3.scaleOrdinal()
+			.domain([1, 6])
+			.range([100, 700]);
+		var y = d3.scaleLinear()
+			/*.domain(d3.extent(rows, function(d) {
+				return +d.LIMIT
+			}))*/
+			.domain([10000,30000])
+			.range([height-10,0]);
+	
+		var svg = d3.select("body").append("svg")
+			.attr("width", width)
+			.attr("height", height)
+			.append("g")
+			.attr("transform", "translate("+50+","+(-50)+")")
+		
+			
+		var svgContainer = d3.select("body").append("svg")
+                                    .attr("width", 700)
+                                    .attr("height", 700);
+                                    
+		rows.forEach(function(d) {
+			var key = d.ID
+			//var bill_amounts = [+d.BILL_AMT1, +d.BILL_AMT2, +d.BILL_AMT3, +d.BILL_AMT4, +d.BILL_AMT5, +d.BILL_AMT6]
+			//var pay_amounts = [+d.PAY_AMT1, +d.PAY_AMT2, +d.PAY_AMT3, +d.PAY_AMT4, +d.PAY_AMT5, +d.PAY_AMT6]
+
+			var data = [
+				{x_axis: 1, y_axis: d.BILL_AMT1},
+				{x_axis: 2, y_axis: d.BILL_AMT2},
+				{x_axis: 3, y_axis: d.BILL_AMT3},
+				{x_axis: 4, y_axis: d.BILL_AMT4},
+				{x_axis: 5, y_axis: d.BILL_AMT5},
+				{x_axis: 6, y_axis: d.BILL_AMT6},
+			];
+			
+			var line_bill = d3.line()
+				.x(function(d) { return x(d.x_axis); })
+				.y(function(d) { return y(d.y_axis); })			
+
+			var lineGraph = svgContainer.append("path")
+				.attr("d", function(d) {
+					return line_bill(data);
+				})
+				.attr("stroke", "blue")
+				.attr("stroke-width", 2)
+				.attr("fill", "none");				
+				
+		
+		});
+
+		svgContainer.append("g")
+			.attr("class", "xaxis")
+			.attr("transform", "translate(0," + width + ")")
+			.call(xAxis)
+			.append("text")
+			.attr("class", "label")
+			.attr("x", width)
+			.attr("y", height)
+			.style("text-anchor", "start")
+			.text("X1");
+
+		svgContainer.append("g")
+			.attr("class", "yaxis")
+			.call(yAxis)
+			.append("text")
+			.attr("class", "label")
+			.attr("transform", "rotate(-90)")
+			.attr("y", 6)
+			.attr("dy", ".71em")
+			.style("text-anchor", "start")
+			.text("X2");
+			
+			
+		svg.append("g")
+			.attr("class", "xaxis")
+			.attr("transform", "translate(0," + width + ")")
+			.call(xAxis)
+			.append("text")
+			.attr("class", "label")
+			.attr("x", width)
+			.attr("y", height)
+			.style("text-anchor", "start")
+			.text("X1");
+
+		svg.append("g")
+			.attr("class", "yaxis")
+			.call(yAxis)
+			.append("text")
+			.attr("class", "label")
+			.attr("transform", "rotate(-90)")
+			.attr("y", 6)
+			.attr("dy", ".71em")
+			.style("text-anchor", "start")
+			.text("X2");
+
+	});
+
+</script>
+
+</html>
