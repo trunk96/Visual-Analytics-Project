@@ -70,112 +70,104 @@ var color = d3.scaleOrdinal(d3.schemeCategory10);
 		.attr("class", "tooltip")
 		.style("opacity", 0);
 
+	var time_scale;
+    var amount_scale;
+    
 	var data = [];
-	d3.csv("pca.csv").then(function(rows) {
-		
-		var x = d3.scaleLinear()
-			.range([0, width-10]);
-		var y = d3.scaleLinear()
-			.range([height-10, 0]);
-		var xAxis = d3.axisBottom(x);
-		var yAxis = d3.axisLeft(y);
-		
-		var x = d3.scaleOrdinal()
-			.domain([1, 6])
-			.range([100, 700]);
-		var y = d3.scaleLinear()
-			/*.domain(d3.extent(rows, function(d) {
-				return +d.LIMIT
-			}))*/
-			.domain([10000,30000])
-			.range([height-10,0]);
 	
-		var svg = d3.select("body").append("svg")
-			.attr("width", width)
-			.attr("height", height)
-			.append("g")
-			.attr("transform", "translate("+50+","+(-50)+")")
+	function draw_line(d, i) {
 		
+		d3.csv("pca.csv", function(d) {
 			
-		var svgContainer = d3.select("body").append("svg")
-                                    .attr("width", 700)
-                                    .attr("height", 700);
-                                    
-		rows.forEach(function(d) {
-			var key = d.ID
-			//var bill_amounts = [+d.BILL_AMT1, +d.BILL_AMT2, +d.BILL_AMT3, +d.BILL_AMT4, +d.BILL_AMT5, +d.BILL_AMT6]
-			//var pay_amounts = [+d.PAY_AMT1, +d.PAY_AMT2, +d.PAY_AMT3, +d.PAY_AMT4, +d.PAY_AMT5, +d.PAY_AMT6]
+			if (d.ID == "3") {
+				
+				console.log("ok2")
+				var key = d.ID
+				//var bill_amounts = [+d.BILL_AMT1, +d.BILL_AMT2, +d.BILL_AMT3, +d.BILL_AMT4, +d.BILL_AMT5, +d.BILL_AMT6]
+				//var pay_amounts = [+d.PAY_AMT1, +d.PAY_AMT2, +d.PAY_AMT3, +d.PAY_AMT4, +d.PAY_AMT5, +d.PAY_AMT6]
+		
+				var values = [
+					{x_axis: 100, y_axis: d.BILL_AMT1},
+					{x_axis: 200, y_axis: d.BILL_AMT2},
+					{x_axis: 300, y_axis: d.BILL_AMT3},
+					{x_axis: 400, y_axis: d.BILL_AMT4},
+					{x_axis: 500, y_axis: d.BILL_AMT5},
+					{x_axis: 600, y_axis: d.BILL_AMT6},
+				];
+				
+				var line_bill = d3.line()
+					.x(function(d) {console.log(time_scale(d.x_axis)); return time_scale(d.x_axis); })
+					.y(function(d) {console.log(amount_scale(d.y_axis)); return amount_scale(d.y_axis); })			
 
-			var data = [
-				{x_axis: 1, y_axis: d.BILL_AMT1},
-				{x_axis: 2, y_axis: d.BILL_AMT2},
-				{x_axis: 3, y_axis: d.BILL_AMT3},
-				{x_axis: 4, y_axis: d.BILL_AMT4},
-				{x_axis: 5, y_axis: d.BILL_AMT5},
-				{x_axis: 6, y_axis: d.BILL_AMT6},
-			];
-			
-			var line_bill = d3.line()
-				.x(function(d) { return x(d.x_axis); })
-				.y(function(d) { return y(d.y_axis); })			
 
-			var lineGraph = svgContainer.append("path")
-				.attr("d", function(d) {
+				var g = d3.select("#line_chart")
+						.append('g')
+						.attr('id', key)
+						
+				g.append("path")
+					.attr("d", line_bill(values))
+					.attr("stroke", "blue")
+					.attr("stroke-width", 3)
+					.attr("fill", "none");	            
+            
+			/*	var lineGraph = d3.select('#chart')
+					.append("path")
+					.attr("d",function(d) {
 					return line_bill(data);
 				})
-				.attr("stroke", "blue")
-				.attr("stroke-width", 2)
-				.attr("fill", "none");				
-				
-		
+					.attr("stroke", "blue")
+					.attr("stroke-width", 2)
+					.attr("fill", "none");								
+	*/
+			}	
 		});
-
-		svgContainer.append("g")
-			.attr("class", "xaxis")
-			.attr("transform", "translate(0," + width + ")")
-			.call(xAxis)
-			.append("text")
-			.attr("class", "label")
-			.attr("x", width)
-			.attr("y", height)
-			.style("text-anchor", "start")
-			.text("X1");
-
-		svgContainer.append("g")
-			.attr("class", "yaxis")
-			.call(yAxis)
-			.append("text")
-			.attr("class", "label")
-			.attr("transform", "rotate(-90)")
-			.attr("y", 6)
-			.attr("dy", ".71em")
-			.style("text-anchor", "start")
-			.text("X2");
+	}
+	
+	function draw_chart(data) {		
 			
+		var container_dimensions = {width: 900, height: 500},
+            margins = {top: 10, right: 20, bottom: 30, left: 60},
+            chart_dimensions = {
+                width: container_dimensions.width - margins.left - margins.right,
+                height: container_dimensions.height - margins.top - margins.bottom
+            };
+            
+        time_scale = d3.scaleTime()
+            .range([0, chart_dimensions.width])
+            .domain([0, 600]);
+        
+        amount_scale = d3.scaleLinear()
+            .range([chart_dimensions.height, 0])
+            .domain([13559, 29239]); //id=3
+            //.domain([-209051, 1664089]);
+            
+        var time_axis = d3.axisBottom(time_scale)
+        
+        var amount_axis = d3.axisLeft(amount_scale)
+        
+		var line_chart = d3.select("body")
+			.append("svg")
+				.attr("width", container_dimensions.width)
+				.attr("height", container_dimensions.height)
+			.append("g")
+				.attr("transform", "translate(" + margins.left + "," + margins.top + ")")
+				.attr("id","line_chart");
 			
-		svg.append("g")
+		line_chart.append("g")
 			.attr("class", "xaxis")
-			.attr("transform", "translate(0," + width + ")")
-			.call(xAxis)
-			.append("text")
-			.attr("class", "label")
-			.attr("x", width)
-			.attr("y", height)
-			.style("text-anchor", "start")
-			.text("X1");
+			.attr("transform", "translate(0," + chart_dimensions.height + ")")
+			.call(time_axis)
 
-		svg.append("g")
+		line_chart.append("g")
 			.attr("class", "yaxis")
-			.call(yAxis)
-			.append("text")
-			.attr("class", "label")
-			.attr("transform", "rotate(-90)")
-			.attr("y", 6)
-			.attr("dy", ".71em")
-			.style("text-anchor", "start")
-			.text("X2");
-
-	});
+			.call(amount_axis)
+			
+			console.log("ok")			
+			
+		draw_line()
+		
+	}
+	draw_chart()
 
 </script>
 
