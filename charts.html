@@ -62,17 +62,99 @@
 </body>
 
 <script type="text/javascript">
-var height=550;
-var width=550;
-var color = d3.scaleOrdinal(d3.schemeCategory10);
+	var height=550;
+	var width=550;
+	var color = d3.scaleOrdinal(d3.schemeCategory10);
 
 	var div = d3.select("body").append("div")
 		.attr("class", "tooltip")
 		.style("opacity", 0);
 
-	var data = [];
+	var time_scale;
+	var amount_scale;
+
+	var data = [];	
+
 	d3.csv("pca.csv").then(function(rows) {
-		console.log(rows)
+		draw_scatterplot(rows);
+		//draw_line(rows[0])
+	});
+	
+	draw_chart();
+	
+	function draw_line(d) {
+			
+		var key = d.ID
+		//var bill_amounts = [+d.BILL_AMT1, +d.BILL_AMT2, +d.BILL_AMT3, +d.BILL_AMT4, +d.BILL_AMT5, +d.BILL_AMT6]
+		//var pay_amounts = [+d.PAY_AMT1, +d.PAY_AMT2, +d.PAY_AMT3, +d.PAY_AMT4, +d.PAY_AMT5, +d.PAY_AMT6]
+
+		var values = [
+			{x_axis: 100, y_axis: d.BILL_AMT1},
+			{x_axis: 200, y_axis: d.BILL_AMT2},
+			{x_axis: 300, y_axis: d.BILL_AMT3},
+			{x_axis: 400, y_axis: d.BILL_AMT4},
+			{x_axis: 500, y_axis: d.BILL_AMT5},
+			{x_axis: 600, y_axis: d.BILL_AMT6},
+		];
+		
+		var line_bill = d3.line()
+			.x(function(d) { return time_scale(d.x_axis); })
+			.y(function(d) { return amount_scale(d.y_axis); })			
+
+
+		var g = d3.select("#line_chart")
+				.append('g')
+				.attr('id', key)
+				
+		g.append("path")
+			.attr("d", line_bill(values))
+			.attr("stroke", "blue")
+			.attr("stroke-width", 3)
+			.attr("fill", "none");	            
+	}
+
+	function draw_chart(data) {		
+			
+		var container_dimensions = {width: 900, height: 500},
+			margins = {top: 10, right: 20, bottom: 30, left: 60},
+			chart_dimensions = {
+				width: container_dimensions.width - margins.left - margins.right,
+				height: container_dimensions.height - margins.top - margins.bottom
+			};
+			
+		time_scale = d3.scaleTime()
+			.range([0, chart_dimensions.width])
+			.domain([0, 600]);
+		
+		amount_scale = d3.scaleLinear()
+			.range([chart_dimensions.height, 0])
+			//.domain([13559, 29239]); //id=3
+			.domain([-209051, 1664089]);
+			
+		var time_axis = d3.axisBottom(time_scale)
+		
+		var amount_axis = d3.axisLeft(amount_scale)
+		
+		var line_chart = d3.select("body")
+			.append("svg")
+				.attr("width", container_dimensions.width)
+				.attr("height", container_dimensions.height)
+			.append("g")
+				.attr("transform", "translate(" + margins.left + "," + margins.top + ")")
+				.attr("id","line_chart");
+			
+		line_chart.append("g")
+			.attr("class", "xaxis")
+			.attr("transform", "translate(0," + chart_dimensions.height + ")")
+			.call(time_axis)
+
+		line_chart.append("g")
+			.attr("class", "yaxis")
+			.call(amount_axis)
+
+	}
+
+	function draw_scatterplot(rows) {
 		rows=rows.sort(function(a,b){ return d3.ascending(a.target, b.target);});
 		var x = d3.scaleLinear()
 			.range([0, width-10]);
@@ -97,6 +179,7 @@ var color = d3.scaleOrdinal(d3.schemeCategory10);
 			.attr("height", height)
 			.append("g")
 			.attr("transform", "translate("+50+","+(-50)+")")
+			
 		svg.selectAll("circle").data(rows).enter()
 			.append("circle")
 			.attr("cx", function(d) {
@@ -131,7 +214,11 @@ var color = d3.scaleOrdinal(d3.schemeCategory10);
 				div.transition()
 					.duration(500)
 					.style("opacity", 0);
+			})
+			.on("click", function(d) {
+				draw_line(d);
 			});
+
 
 		svg.append("g")
 			.attr("class", "xaxis")
@@ -155,41 +242,39 @@ var color = d3.scaleOrdinal(d3.schemeCategory10);
 			.style("text-anchor", "start")
 			.text("X2");
 
-			var legend = d3.select("svg").selectAll(".legend")
-					 .data(color.domain())
-					 .enter().append("g")
-					 .classed("legend", true)
-					 .attr("transform", function(d, i) {
-							 return "translate(0," + i * 20 + ")";
-					 })
-					 .attr("class", "selected");
-			legend.append("rect")
-				    .attr("x", width -140)
-						.attr("y", 20)
-				    .attr("width", 12)
-				    .attr("height", 12)
-				    .style("fill", color)
-						.on("mousedown", function(t){
-							d3.selectAll(".selected").attr("class", "unselected");
-						})
-						.on("mouseup", function(t){
-							d3.select(this).attr("class", "selected");
-						});
-			legend.append("text")
-					   .attr("x", width - 116)
-						 .attr("y", 20)
-					   .attr("dy", ".65em")
-					   .text(function(d) {
-					    	if (d==0){
-									return "Correct";
-								}
-								else{
-									return "Default";
-								}
-					    });
-
-	});
-
+		var legend = d3.select("svg").selectAll(".legend")
+			 .data(color.domain())
+			 .enter().append("g")
+			 .classed("legend", true)
+			 .attr("transform", function(d, i) {
+					 return "translate(0," + i * 20 + ")";
+			 })
+			 .attr("class", "selected");
+		legend.append("rect")
+			.attr("x", width -140)
+				.attr("y", 20)
+			.attr("width", 12)
+			.attr("height", 12)
+			.style("fill", color)
+				.on("mousedown", function(t){
+					d3.selectAll(".selected").attr("class", "unselected");
+				})
+				.on("mouseup", function(t){
+					d3.select(this).attr("class", "selected");
+				});
+		legend.append("text")
+			.attr("x", width - 116)
+			.attr("y", 20)
+			.attr("dy", ".65em")
+			.text(function(d) {
+				if (d==0){
+					return "Correct";
+				}
+				else{
+					return "Default";
+				}
+			});
+	}
 </script>
 
 </html>
