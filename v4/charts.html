@@ -6,7 +6,7 @@
 <head>
 	<meta http-equiv="content-type" content="text/html;charset=utf-8">
 	<title>Loading data</title>
-	<script type="text/javascript" src="d3.min.js"></script>
+	<script type="text/javascript" src="https://d3js.org/d3.v4.min.js"></script>
 	<style type="text/css">
 		div.tooltip {
 			position: absolute;
@@ -75,26 +75,26 @@
 	var max_value;
 	var min_value;
 
-	var data = [];	
-	
+	var data = [];
+
 	original_data = d3.csv("pca.csv")
-	
-	d3.csv("standardized_data.csv").then(function(rows) {
+
+	d3.csv("standardized_data.csv", function(rows) {
 		max_value  = d3.max(rows, function(d){
 			return Math.max.apply(Math, [+d.BILL_AMT1, +d.BILL_AMT2, +d.BILL_AMT3, +d.BILL_AMT4, +d.BILL_AMT5, +d.BILL_AMT6, +d.PAY_AMT1, +d.PAY_AMT2, +d.PAY_AMT3, +d.PAY_AMT4, +d.PAY_AMT5, +d.PAY_AMT6]);
 		})
 
 		min_value = d3.min(rows, function(d){
 			return Math.min.apply(Math, [+d.BILL_AMT1, +d.BILL_AMT2, +d.BILL_AMT3, +d.BILL_AMT4, +d.BILL_AMT5, +d.BILL_AMT6, +d.PAY_AMT1, +d.PAY_AMT2, +d.PAY_AMT3, +d.PAY_AMT4, +d.PAY_AMT5, +d.PAY_AMT6]);
-		})		
+		})
 
 		draw_scatterplot(rows);
-	});	
-	
+	});
+
 	function draw_line(d) {
-			
+
 		var key = d.ID
-		
+
 		var bill_values = [
 			{x_axis: 100, y_axis: d.BILL_AMT1},
 			{x_axis: 200, y_axis: d.BILL_AMT2},
@@ -103,22 +103,22 @@
 			{x_axis: 500, y_axis: d.BILL_AMT5},
 			{x_axis: 600, y_axis: d.BILL_AMT6},
 		];
-		
+
 		var line_bill = d3.line()
 			.x(function(d) { return time_scale(d.x_axis); })
-			.y(function(d) { return amount_scale(d.y_axis); })			
+			.y(function(d) { return amount_scale(d.y_axis); })
 
 
 		var g = d3.select("#line_chart")
 				.append('g')
 				.attr('id', key)
-				
+
 		g.append("path")
 			.attr("d", line_bill(bill_values))
 			.attr("stroke", "blue")
 			.attr("stroke-width", 3)
 			.attr("fill", "none");
-			
+
 		g.selectAll('circle')
             .data(bill_values)
             .enter()
@@ -127,8 +127,8 @@
             .attr('cy', function(d) {return amount_scale(d.y_axis)})
             .attr('r',5)
             .attr("stroke", "blue")
-			.attr("stroke-width", 3);			
-				            
+			.attr("stroke-width", 3);
+
 		var pay_values = [
 			{x_axis: 100, y_axis: d.PAY_AMT1},
 			{x_axis: 200, y_axis: d.PAY_AMT2},
@@ -137,22 +137,22 @@
 			{x_axis: 500, y_axis: d.PAY_AMT5},
 			{x_axis: 600, y_axis: d.PAY_AMT6},
 		];
-		
+
 		var line_pay = d3.line()
 			.x(function(d) { return time_scale(d.x_axis); })
-			.y(function(d) { return amount_scale(d.y_axis); })			
+			.y(function(d) { return amount_scale(d.y_axis); })
 
 
 		var p = d3.select("#line_chart")
 				.append('g')
 				.attr('id', key)
-				
+
 		p.append("path")
 			.attr("d", line_pay(pay_values))
 			.attr("stroke", "green")
 			.attr("stroke-width", 3)
 			.attr("fill", "none");
-			
+
 		p.selectAll('circle')
             .data(pay_values)
             .enter()
@@ -162,9 +162,9 @@
             .attr('r',5)
             .attr("stroke", "green")
 			.attr("stroke-width", 3);
-			
-		var enter_duration = 1000;      
-        
+
+		var enter_duration = 1000;
+
         g.selectAll('circle')
             .on('mouseover', function(d){
                 d3.select(this)
@@ -175,7 +175,7 @@
                     d3.select(this).transition().attr('r', 5)
                 }
             })
-        
+
         g.selectAll('circle')
             .on('mouseover.a', function(d){
 				d3.select(".text_" + key).remove()
@@ -194,7 +194,7 @@
                     .attr('transform','translate(10, -10)')
                     .remove()
             })
-            	            
+
         p.selectAll('circle')
             .on('mouseover', function(d){
                 d3.select(this)
@@ -205,7 +205,7 @@
                     d3.select(this).transition().attr('r', 5)
                 }
             })
-        
+
         p.selectAll('circle')
             .on('mouseover.a', function(d){
 				d3.select(".text_" + key).remove()
@@ -223,39 +223,39 @@
                     .style('opacity',0)
                     .attr('transform','translate(10, -10)')
                     .remove()
-            })	            
-	}	
-	
+            })
+	}
+
 	function resolve_value(key,attr) {
-		original_data.then(function(rows) {
+		d3.csv("pca.csv", function(rows) {
 			row = rows.filter(function(d) {
 				return d.ID == key
 			});
-			d3.select(".text_" + key).text(row[0][attr])		
+			d3.select(".text_" + key).text(row[0][attr])
 		})
 	}
-	
-	function draw_chart(data) {		
-			
+
+	function draw_chart(data) {
+
 		var container_dimensions = {width: 900, height: 500},
 			margins = {top: 10, right: 20, bottom: 30, left: 60},
 			chart_dimensions = {
 				width: container_dimensions.width - margins.left - margins.right,
 				height: container_dimensions.height - margins.top - margins.bottom
 			};
-			
+
 		time_scale = d3.scaleTime()
 			.range([0, chart_dimensions.width - 100])
 			.domain([0, 600]);
-		      
+
 		amount_scale = d3.scaleLinear()
 			.range([chart_dimensions.height, 0])
 			.domain([min_value,max_value]);
-			
+
 		var time_axis = d3.axisBottom(time_scale)
-		
+
 		var amount_axis = d3.axisLeft(amount_scale)
-		
+
 		var line_chart = d3.select("body")
 			.append("svg")
 				.attr("width", container_dimensions.width)
@@ -263,7 +263,7 @@
 			.append("g")
 				.attr("transform", "translate(" + margins.left + "," + margins.top + ")")
 				.attr("id","line_chart");
-			
+
 		line_chart.append("g")
 			.attr("class", "xaxis")
 			.attr("transform", "translate(0," + chart_dimensions.height + ")")
@@ -300,7 +300,7 @@
 			.attr("height", height)
 			.append("g")
 			.attr("transform", "translate("+50+","+(-50)+")")
-			
+
 		svg.selectAll("circle").data(rows).enter()
 			.append("circle")
 			.attr("cx", function(d) {
@@ -368,7 +368,7 @@
 					 return "translate(0," + i * 20 + ")";
 			 })
 			 .attr("class", "selected");
-			 
+
 		legend.append("rect")
 			.attr("x", width -140)
 			.attr("y", 20)
@@ -377,7 +377,7 @@
 			.style("fill", color)
 			.on("click", function(t) {
 
-				d3.selectAll("rect").attr("class","unselected");				
+				d3.selectAll("rect").attr("class","unselected");
 				d3.select(this).attr("class","selected");
 				d3.selectAll("[label]").each(function() {
 					var x = d3.select(this)
@@ -390,11 +390,11 @@
 						else x.attr("class","selected")
 					}
 				});
-					
+
 				d3.selectAll("circle").filter(function(d) { return d.target == t; }).attr("class","selected");
 				d3.selectAll("circle").filter(function(d) { return d.target == !+t; }).attr("class","unselected");
 			});
-			
+
 		legend.append("text")
 			.attr("label","text_legend")
 			.attr("x", width - 116)
@@ -408,7 +408,7 @@
 					return "Default";
 				}
 			});
-			
+
 		draw_chart();
 	}
 </script>

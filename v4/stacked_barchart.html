@@ -137,6 +137,7 @@ function to_barchart(){
 	  return d;
 	},function(data) {
 		//console.log(data)
+		//d3.select("svg").selectAll("b").selectAll("rect").exit().transition().duration(500).attr("height", 0);
 		d3.select("svg").remove()
 		var svg=d3.select("body")
 		.append("svg")
@@ -158,7 +159,7 @@ function to_barchart(){
 		  y.domain([0, d3.max(data, function(d) {
 				//console.log(d.total)
 				return d.total; })]).nice();
-			console.log(y.domain())
+			//console.log(y.domain())
 			z.domain(["0", "1"])
 
 			var keys = data.columns.slice(1);
@@ -175,7 +176,7 @@ function to_barchart(){
 					.transition()
 					.duration(750)
 		      .attr("height", function(d) {
-						console.log(height);
+						//console.log(height);
 						return height - y(d[d3.select(selected_legend).attr("classification")]); })
 					.attr("fill", z(d3.select(selected_legend).attr("classification")));
 

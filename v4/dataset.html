@@ -6,7 +6,7 @@
 <head>
 	<meta http-equiv="content-type" content="text/html;charset=utf-8">
 	<title>Loading data</title>
-	<script type="text/javascript" src="d3.min.js"></script>
+	<script type="text/javascript" src="https://d3js.org/d3.v4.min.js"></script>
 	<style type="text/css">
 		div.tooltip {
 			position: absolute;
@@ -71,7 +71,7 @@ var color = d3.scaleOrdinal(d3.schemeCategory10);
 		.style("opacity", 0);
 
 	var data = [];
-	d3.csv("pca.csv").then(function(rows) {
+	d3.csv("pca.csv", function(rows) {
 		console.log(rows)
 		rows=rows.sort(function(a,b){ return d3.ascending(a.target, b.target);});
 		var x = d3.scaleLinear()
