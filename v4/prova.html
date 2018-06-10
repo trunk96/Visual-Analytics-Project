@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+
+<!-- Mirrored from mbostock.github.com/d3/ex/choropleth.html by HTTrack Website Copier/3.x [XR&CO'2010], Sat, 04 Feb 2012 16:43:26 GMT -->
+	<head>
+		<meta http-equiv="content-type" content="text/html;charset=utf-8">
+		<title>Simple selection</title>
+		<script type="text/javascript" src="d3.js"></script>
+		<style type="text/css">
+		.red{
+      fill: red;
+    }
+    .green1{
+      fill: green;
+    }
+		</style>
+	</head>
+	<body>
+		<div align="center">
+			<h1>Change color of existing elements</h1>
+		</div>
+		<div id='chart' align="center">
+			<svg class="svg_area" width="800" height="400">
+				<circle class="red" cx="300" cy="100" r="30"/>
+				<circle class="red" cx="500" cy="100" r="30"/>
+				<circle class="red" cx="500" cy="300" r="30"/>
+				<circle class="red" cx="300" cy="300" r="30"/>
+				<circle id="blue" cx="400" cy="200" r="30" fill="blue"/>
+
+
+			</svg>
+		</div>
+		<div class="buttons">
+			<button type="button" onclick="changeColor();">Change Colors</button>
+		</div>
+	</body>
+
+<script>
+var clicked=false;
+
+
+
+
+function changeColor(){
+  var red_circles=d3.selectAll(".red")
+  .transition()
+  .duration(750)
+  .attr("class", "green1");
+
+
+  var blue_circles=d3.selectAll("#blue")
+  .transition()
+  .duration(750)
+  .attr("fill", "black");
+
+  var circles=d3.selectAll("circle")
+  .on("click", doClick);
+
+
+}
+
+function doClick(){
+  if (clicked==false){
+    d3.select(this)
+    .transition()
+    .duration(750)
+    .attr("r", "50");
+
+    clicked=true
+  }
+  else{
+    d3.select(this)
+    .transition()
+    .duration(750)
+    .attr("r", "30");
+
+    clicked=false;
+  }
+
+}
+</script>

@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<head>
+	<meta http-equiv="content-type" content="text/html;charset=utf-8">
+	<title>Loading rows</title>
+  <script type="text/javascript" src="https://d3js.org/d3-array.v1.min.js"></script>
+
+</head>
+
+<body>
+	<div align="center">
+		<h1>Loading rows</h1>
+	</div>
+	<svg width="960" height="500"></svg>
+	</div>
+</body>
+<!DOCTYPE html>
+<style>
+
+.axis .domain {
+  display: none;
+}
+
+</style>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script>
+var svg = d3.select("svg"),
+    margin = {top: 20, right: 20, bottom: 30, left: 40},
+    width = +svg.attr("width") - margin.left - margin.right,
+    height = +svg.attr("height") - margin.top - margin.bottom,
+    g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+var x = d3.scaleBand()
+    .rangeRound([0, width])
+    .paddingInner(0.05)
+    .align(0.1);
+
+var y = d3.scaleLinear()
+    .rangeRound([height, 0]);
+
+var z = d3.scaleOrdinal(d3.schemeCategory10);
+
+d3.csv("AGE_frequency.csv", compute_total, draw_stack);
+
+
+function draw_stack (error, data) {
+  //if (error) throw error;
+
+  var keys = data.columns.slice(1);
+
+  //data.sort(function(a, b) { return b.total - a.total; });
+  x.domain(data.map(function(d) { return d.AGE; }));
+  y.domain([0, d3.max(data, function(d) { return d.total; })]).nice();
+  z.domain(keys);
+
+  g.append("g")
+    .selectAll("g")
+    .data(d3.stack().keys(keys)(data))
+    .enter().append("g")
+      .attr("fill", function(d) { return z(d.key); })
+    .selectAll("rect")
+    .data(function(d) { return d; })
+    .enter().append("rect")
+      .attr("x", function(d) { return x(d.data.AGE); })
+      .attr("y", function(d) { return y(d[1]); })
+      .attr("height", function(d) { return y(d[0]) - y(d[1]); })
+      .attr("width", x.bandwidth());
+
+  g.append("g")
+      .attr("class", "axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(d3.axisBottom(x));
+
+  g.append("g")
+      .attr("class", "axis")
+      .call(d3.axisLeft(y).ticks(null, "s"))
+    .append("text")
+      .attr("x", 2)
+      .attr("y", y(y.ticks().pop()) + 0.5)
+      .attr("dy", "0.32em")
+      .attr("fill", "#000")
+      .attr("font-weight", "bold")
+      .attr("text-anchor", "start")
+      .text("# of occurrences");
+
+  var legend = g.append("g")
+      .attr("font-family", "sans-serif")
+      .attr("font-size", 10)
+      .attr("text-anchor", "start")
+    .selectAll("g")
+    .data(keys.slice().reverse())
+    .enter().append("g")
+      .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; })
+			.attr("class", "legend")
+			.attr("classification", function(d){
+				return d;
+			})
+			.on("click", to_barchart);
+
+  legend.append("rect")
+      .attr("x", width - 45)
+      .attr("width", 19)
+      .attr("height", 19)
+      .attr("fill", z)
+
+
+  legend.append("text")
+      .attr("x", width -19)
+      .attr("y", 9.5)
+      .attr("dy", "0.32em")
+      .text(function(d) {
+					if (d==0){
+						return "Correct";
+					}
+					else{
+						return "Default";
+					}
+			 });
+}
+
+
+function to_barchart(){
+	var selected_legend=this
+	d3.selectAll(".legend").attr("opacity", "0.4");
+	d3.select(selected_legend).attr("opacity", "1");
+	d3.csv("AGE_frequency.csv", function(d, i, columns){
+		//console.log(d);
+		if (d3.select(selected_legend).attr("classification")=="0"){
+			var t = d[0] = +d[[0]];
+	  	d.total = t;
+			console.log(d.total)
+		}
+		else{
+			var t = d[1] = +d[1];
+			d.total = t;
+			//console.log(d.total)
+		}
+	  return d;
+	},function(data) {
+		//console.log(data)
+		d3.select("svg").remove()
+		var svg=d3.select("body")
+		.append("svg")
+		.attr("width", "960")
+		.attr("height", "500");
+		g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+		var x = d3.scaleBand()
+	    .rangeRound([0, width])
+	    .paddingInner(0.05)
+	    .align(0.1);
+
+			var y = d3.scaleLinear()
+	    .rangeRound([height, 0]);
+
+		var z=d3.scaleOrdinal(d3.schemeCategory10)
+
+			x.domain(data.map(function(d) { return d.AGE; }));
+		  y.domain([0, d3.max(data, function(d) {
+				//console.log(d.total)
+				return d.total; })]).nice();
+			console.log(y.domain())
+			z.domain(["0", "1"])
+
+			var keys = data.columns.slice(1);
+
+
+		  // append the rectangles for the bar chart
+			g.append("g")
+		    .selectAll("g")
+		      .data(data)
+		    .enter().append("rect")
+		      .attr("x", function(d) { return x(d.AGE); })
+		      .attr("width", x.bandwidth())
+		      .attr("y", function(d) { return y(d[d3.select(selected_legend).attr("classification")]); })
+					.transition()
+					.duration(750)
+		      .attr("height", function(d) {
+						console.log(height);
+						return height - y(d[d3.select(selected_legend).attr("classification")]); })
+					.attr("fill", z(d3.select(selected_legend).attr("classification")));
+
+		  // add the x Axis
+			g.append("g")
+		      .attr("class", "axis")
+		      .attr("transform", "translate(0," + height + ")")
+		      .call(d3.axisBottom(x));
+
+		  g.append("g")
+		      .attr("class", "axis")
+		      .call(d3.axisLeft(y).ticks(null, "s"))
+		    .append("text")
+		      .attr("x", 2)
+		      .attr("y", y(y.ticks().pop()) + 0.5)
+		      .attr("dy", "0.32em")
+		      .attr("fill", "#000")
+		      .attr("font-weight", "bold")
+		      .attr("text-anchor", "start")
+		      .text("# of occurrences");
+
+		  var legend = g.append("g")
+		      .attr("font-family", "sans-serif")
+		      .attr("font-size", 10)
+		      .attr("text-anchor", "start")
+		    .selectAll("g")
+		    .data(keys.slice().reverse())
+		    .enter().append("g")
+		      .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; })
+					.attr("class", "legend")
+					.attr("classification", function(d){
+						return d;
+					})
+					.attr("opacity", function(d){
+						if(d==d3.select(selected_legend).attr("classification")){
+							return "1";
+						}
+						else{
+							return "0.4"
+						}
+					})
+					.on("click", to_barchart);
+
+					legend.append("rect")
+				      .attr("x", width - 45)
+				      .attr("width", 19)
+				      .attr("height", 19)
+				      .attr("fill", z)
+
+
+				  legend.append("text")
+				      .attr("x", width -19)
+				      .attr("y", 9.5)
+				      .attr("dy", "0.32em")
+				      .text(function(d) {
+									if (d==0){
+										return "Correct";
+									}
+									else{
+										return "Default";
+									}
+							 });
+
+			});
+
+
+
+}
+function compute_total (d, i, columns) {
+	for (i = 1, t = 0; i < columns.length; ++i) t += d[columns[i]] = +d[columns[i]];
+	d.total = t;
+	return d;
+}
+
+</script>
