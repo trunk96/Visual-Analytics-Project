@@ -58,6 +58,12 @@
 		<h1>Loading data</h1>
 	</div>
 	<div id='chart' align="center">
+		<svg id="scatterplot"></svg>
+		<svg id="linechart"></svg>
+
+	</div>
+	<div id="stackbarcharts" align="center">
+
 	</div>
 </body>
 
@@ -89,7 +95,267 @@
 		})
 
 		draw_scatterplot(rows);
+		draw_stackbarchart("AGE");
+		draw_stackbarchart("SEX");
+		draw_stackbarchart("MARRIAGE");
+		draw_stackbarchart("EDUCATION");
 	});
+
+	//d3.csv("AGE_frequency.csv", compute_total, draw_stackbarchart);
+
+
+
+	function draw_stackbarchart(t){
+		var type=t;
+		var svg = d3.select("#stackbarcharts")
+							.append("div").attr("id", "div-"+type)
+							.append("svg").attr("id", type).attr("width", 960).attr("height", 550),
+		    margin = {top: 20, right: 20, bottom: 80, left: 40},
+		    width = +svg.attr("width") - margin.left - margin.right,
+		    height = +svg.attr("height") - margin.top - margin.bottom,
+		    g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+		var x = d3.scaleBand()
+		    .rangeRound([0, width])
+		    .paddingInner(0.05)
+		    .align(0.1);
+
+		var y = d3.scaleLinear()
+		    .rangeRound([height, 0]);
+
+		var z = d3.scaleOrdinal(d3.schemeCategory10);
+
+		d3.csv(type+"_frequency.csv", compute_total, draw_stack);
+
+
+		function draw_stack (error, data) {
+		  //if (error) throw error;
+
+		  var keys = data.columns.slice(1);
+
+		  //data.sort(function(a, b) { return b.total - a.total; });
+		  x.domain(data.map(function(d) { return d[type]; }));
+		  y.domain([0, d3.max(data, function(d) { return d.total; })]).nice();
+		  z.domain(keys);
+
+		  g.append("g")
+		    .selectAll("g")
+		    .data(d3.stack().keys(keys)(data))
+		    .enter().append("g")
+		      .attr("fill", function(d) { return z(d.key); })
+		    .selectAll("rect")
+		    .data(function(d) { return d; })
+		    .enter().append("rect")
+		      .attr("x", function(d) { return x(d.data[type]); })
+		      .attr("y", function(d) { return y(d[1]); })
+		      .attr("height", function(d) { return y(d[0]) - y(d[1]); })
+		      .attr("width", x.bandwidth());
+
+			g.append("text")
+					.attr("transform",
+								"translate(" + (width/2) + " ," +
+															 (height + margin.top + 20) + ")")
+					.style("text-anchor", "middle")
+					.text(type);
+
+
+		  g.append("g")
+		      .attr("class", "axis")
+		      .attr("transform", "translate(0," + height + ")")
+		      .call(d3.axisBottom(x));
+
+		  g.append("g")
+		      .attr("class", "axis")
+		      .call(d3.axisLeft(y).ticks(null, "s"))
+		    .append("text")
+		      .attr("x", 2)
+		      .attr("y", y(y.ticks().pop()) + 0.5)
+		      .attr("dy", "0.32em")
+		      .attr("fill", "#000")
+		      .attr("font-weight", "bold")
+		      .attr("text-anchor", "start")
+		      .text("# of occurrences");
+
+		  var legend = g.append("g")
+		      .attr("font-family", "sans-serif")
+		      .attr("font-size", 10)
+		      .attr("text-anchor", "start")
+		    .selectAll("g")
+		    .data(keys.slice().reverse())
+		    .enter().append("g")
+		      .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; })
+					.attr("class", "legend-"+type)
+					.attr("classification", function(d){
+						return d;
+					})
+					.on("click", to_barchart);
+
+		  legend.append("rect")
+		      .attr("x", width - 45)
+		      .attr("width", 19)
+		      .attr("height", 19)
+		      .attr("fill", z)
+
+
+		  legend.append("text")
+		      .attr("x", width -19)
+		      .attr("y", 9.5)
+		      .attr("dy", "0.32em")
+		      .text(function(d) {
+							if (d==0){
+								return "Correct";
+							}
+							else{
+								return "Default";
+							}
+					 });
+		}
+
+
+		function to_barchart(){
+			var selected_legend=this
+			d3.selectAll(".legend-"+type).attr("opacity", "0.4");
+			d3.select(selected_legend).attr("opacity", "1");
+			d3.csv(type+"_frequency.csv", function(d, i, columns){
+				//console.log(d);
+				if (d3.select(selected_legend).attr("classification")=="0"){
+					var t = d[0] = +d[[0]];
+			  	d.total = t;
+					//console.log(d.total)
+				}
+				else{
+					var t = d[1] = +d[1];
+					d.total = t;
+					//console.log(d.total)
+				}
+			  return d;
+			},function(data) {
+				console.log(data)
+				//d3.select("svg").selectAll("b").selectAll("rect").exit().transition().duration(500).attr("height", 0);
+				d3.select("#"+type).remove()
+				var svg=d3.select("#div-"+type)
+				.append("svg")
+				.attr("width", "960")
+				.attr("height", "550")
+				.attr("id", type);
+				g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+				var x = d3.scaleBand()
+			    .rangeRound([0, width])
+			    .paddingInner(0.05)
+			    .align(0.1);
+
+					var y = d3.scaleLinear()
+			    .rangeRound([height, 0]);
+
+				var z=d3.scaleOrdinal(d3.schemeCategory10)
+
+					x.domain(data.map(function(d) { return d[type]; }));
+				  y.domain([0, d3.max(data, function(d) {
+						//console.log(d.total)
+						return d.total; })]).nice();
+					//console.log(y.domain())
+					z.domain(["0", "1"])
+
+					var keys = data.columns.slice(1);
+
+
+				  // append the rectangles for the bar chart
+					g.append("g")
+				    .selectAll("g")
+				      .data(data)
+				    .enter().append("rect")
+				      .attr("x", function(d) { return x(d[type]); })
+				      .attr("width", x.bandwidth())
+				      .attr("y", function(d) { return y(d[d3.select(selected_legend).attr("classification")]); })
+							.transition()
+							.duration(750)
+				      .attr("height", function(d) {
+								//console.log(height);
+								return height - y(d[d3.select(selected_legend).attr("classification")]); })
+							.attr("fill", z(d3.select(selected_legend).attr("classification")));
+
+
+							g.append("text")
+									.attr("transform",
+												"translate(" + (width/2) + " ," +
+																			 (height + margin.top + 20) + ")")
+									.style("text-anchor", "middle")
+									.text(type);
+
+				  // add the x Axis
+					g.append("g")
+				      .attr("class", "axis")
+				      .attr("transform", "translate(0," + height + ")")
+				      .call(d3.axisBottom(x))
+
+				  g.append("g")
+				      .attr("class", "axis")
+				      .call(d3.axisLeft(y).ticks(null, "s"))
+				    .append("text")
+				      .attr("x", 2)
+				      .attr("y", y(y.ticks().pop()) + 0.5)
+				      .attr("dy", "0.32em")
+				      .attr("fill", "#000")
+				      .attr("font-weight", "bold")
+				      .attr("text-anchor", "start")
+				      .text("# of occurrences");
+
+				  var legend = g.append("g")
+				      .attr("font-family", "sans-serif")
+				      .attr("font-size", 10)
+				      .attr("text-anchor", "start")
+				    .selectAll("g")
+				    .data(keys.slice().reverse())
+				    .enter().append("g")
+				      .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; })
+							.attr("class", "legend-"+type)
+							.attr("classification", function(d){
+								return d;
+							})
+							.attr("opacity", function(d){
+								if(d==d3.select(selected_legend).attr("classification")){
+									return "1";
+								}
+								else{
+									return "0.4"
+								}
+							})
+							.on("click", to_barchart);
+
+							legend.append("rect")
+						      .attr("x", width - 45)
+						      .attr("width", 19)
+						      .attr("height", 19)
+						      .attr("fill", z)
+
+
+						  legend.append("text")
+						      .attr("x", width -19)
+						      .attr("y", 9.5)
+						      .attr("dy", "0.32em")
+						      .text(function(d) {
+											if (d==0){
+												return "Correct";
+											}
+											else{
+												return "Default";
+											}
+									 });
+
+					});
+
+
+
+		}
+
+	}
+
+	function compute_total (d, i, columns) {
+		for (i = 1, t = 0; i < columns.length; ++i) t += d[columns[i]] = +d[columns[i]];
+		d.total = t;
+		return d;
+	}
 
 	function draw_line(d) {
 
@@ -256,8 +522,8 @@
 
 		var amount_axis = d3.axisLeft(amount_scale)
 
-		var line_chart = d3.select("body")
-			.append("svg")
+		var line_chart = d3.select("#linechart")
+			//.append("svg")
 				.attr("width", container_dimensions.width)
 				.attr("height", container_dimensions.height)
 			.append("g")
@@ -295,7 +561,7 @@
 			}))
 			.range([10, height-10]);
 
-		var svg = d3.select("body").append("svg")
+		var svg = d3.select("#scatterplot")
 			.attr("width", width)
 			.attr("height", height)
 			.append("g")
@@ -377,7 +643,7 @@
 			.style("fill", color)
 			.on("click", function(t) {
 
-				d3.selectAll("rect").attr("class","unselected");
+				d3.select("#scatterplot").selectAll("rect").attr("class","unselected");
 				d3.select(this).attr("class","selected");
 				d3.selectAll("[label]").each(function() {
 					var x = d3.select(this)
