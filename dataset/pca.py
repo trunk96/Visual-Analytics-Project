@@ -22,12 +22,12 @@ y = data.loc[:,['default payment next month']].values
 x = StandardScaler().fit_transform(x)
 
 from sklearn.decomposition import PCA
-pca = PCA(n_components=2)
+pca = PCA(n_components=6)
 #seed = np.random.RandomState(seed=3)
 #mds = manifold.MDS(n_components=2, max_iter=100, random_state=seed, dissimilarity="euclidean", n_jobs=-1)
 principalComponents = pca.fit_transform(x)
 #principalComponents=mds.fit_transform(x)
-principalDf = pd.DataFrame(data = principalComponents, columns = ['X1', 'X2'])
+principalDf = pd.DataFrame(data = principalComponents, columns = ['X1', 'X2', 'X3', 'X4', 'X5', 'X6'])
 midDf=pd.concat([principalDf, data[["ID"]]], axis=1)
 list_of_attributes=["SEX", "AGE", "EDUCATION", "MARRIAGE","LIMIT_BAL", "BILL_AMT1", "BILL_AMT2", "BILL_AMT3", "BILL_AMT4", "BILL_AMT5", "BILL_AMT6", "PAY_AMT1", "PAY_AMT2", "PAY_AMT3", "PAY_AMT4", "PAY_AMT5", "PAY_AMT6"]
 for elem in list_of_attributes:
