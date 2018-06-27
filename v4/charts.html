@@ -68,7 +68,7 @@
 </body>
 
 <script type="text/javascript">
-	var height=550;
+	var height=400;
 	var width=550;
 	var color = d3.scaleOrdinal(d3.schemeCategory10);
 
@@ -103,24 +103,46 @@
 
 	//d3.csv("AGE_frequency.csv", compute_total, draw_stackbarchart);
 
-
-
+	
 	function draw_stackbarchart(t){
 		var type=t;
+		var values,labels;
+		var sort_age=false;
 		var svg=d3.select("#stackbarcharts")
 							.append("div").attr("id", "div-"+type)
 							.append("svg").attr("id", type);
 		if (t=="AGE"){
-			svg.attr("width", 960).attr("height", 550).style("float", "left")
+			svg.attr("width", 960).attr("height", 250).style("float", "left")
+			svg.append("rect")
+		      .attr("x", 895)
+		      .attr("y", 100)
+		      .attr("width", 19)
+		      .attr("height", 19)
+		      .attr("fill", "grey")
+		      .on("click", function() {
+				  console.log("Click")
+				  //age_sorting()
+			})
+		      
+		    svg.append("text")
+				.attr("x", 920)
+				.attr("y", 115)
+				.text("Sort")
 		}
 		else if (t=="SEX"){
-			svg.attr("width", 250).attr("height", 550).style("float", "left")
+			svg.attr("width", 250).attr("height", 250).style("float", "left")
+			values = ["1","2"]
+			labels = ["male","female"]
 		}
 		else if (t=="MARRIAGE"){
-			svg.attr("width", 300).attr("height", 550).style("float", "left")
+			svg.attr("width", 300).attr("height", 250).style("float", "left")
+			values = ["0","1","2","3"]
+			labels = ["unknown","married","single","others"]
 		}
 		else{
-			svg.attr("width", 300).attr("height", 550).style("float", "left")
+			svg.attr("width", 300).attr("height", 250).style("float", "left")
+			values = ["0","1","2","3","4","5","6"]
+			labels = ["unknown","graduate_school","university","high_school","others","unknown","unknown"]
 		}
 		var margin = {top: 20, right: 20, bottom: 80, left: 40},
 		    width = +svg.attr("width") - margin.left - margin.right,
@@ -133,19 +155,36 @@
 		    .align(0.1);
 
 		var y = d3.scaleLinear()
-		    .rangeRound([height, 0]);
+		    .rangeRound([height, 0])
 
 		var z = d3.scaleOrdinal(d3.schemeCategory10);
 
 		d3.csv(type+"_frequency.csv", compute_total, draw_stack);
 
+/*
+		function age_sorting() {
+			sort_age=true;
+			var type="AGE";
+			var prev_height=d3.select("#"+type).attr("height");
+			var prev_width=d3.select("#"+type).attr("width");
+			d3.select("#"+type).remove()
+			var svg=d3.select("#div-"+type)
+			.append("svg")
+			.attr("width", prev_width)
+			.attr("height", prev_height)
+			.attr("id", type)
+			.style("float", "left");
+			g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
+			d3.csv(type+"_frequency.csv", draw_stack);
+		}
+	*/
 		function draw_stack (error, data) {
 		  //if (error) throw error;
 
 		  var keys = data.columns.slice(1);
 
-			if (type=="SEX" || type=="MARRIAGE" || type=="EDUCATION"){
+			if (type=="SEX" || type=="MARRIAGE" || type=="EDUCATION" || sort_age == true){
 				data.sort(function(a, b) { return b ['1'] - a['1']; });
 			}
 		  x.domain(data.map(function(d) { return d[type]; }));
@@ -154,7 +193,7 @@
 
 		  g.append("g")
 		    .selectAll("g")
-		    .data(d3.stack().keys(keys)(data))
+		    .data(d3.stack().keys(keys).order(d3.stackOrderReverse)(data))
 		    .enter().append("g")
 		      .attr("fill", function(d) { return z(d.key); })
 		    .selectAll("rect")
@@ -168,27 +207,51 @@
 			g.append("text")
 					.attr("transform",
 								"translate(" + (width/2) + " ," +
-															 (height + margin.top + 20) + ")")
+															 (height + margin.top + 50) + ")")
 					.style("text-anchor", "middle")
 					.text(type);
 
+			var x_axis;
+			if (type == "AGE") {
+				x_axis = d3.axisBottom(x);
+			}
+			else {
+				x_axis = d3.axisBottom(x)
+				.tickValues(values)
+				.tickFormat(function(d,i){ return labels[i] });
+			}			
+			  
+			if (type != "AGE") {
+				g.append("g")
+					.attr("class", "axis")
+					.attr("transform", "translate(0," + height + ")")		      
+					.call(x_axis)
+					.selectAll("text")
+					.style("text-anchor", "end")
+					.attr("dx", "-.8em")
+					.attr("dy", ".15em")
+					.attr("transform", "rotate(-65)");
+				}
+			else {
+				g.append("g")
+				  .attr("class", "axis")
+				  .attr("transform", "translate(0," + height + ")")		      
+				  .call(x_axis)
+			  }
 
 		  g.append("g")
 		      .attr("class", "axis")
-		      .attr("transform", "translate(0," + height + ")")
-		      .call(d3.axisBottom(x));
-
-		  g.append("g")
-		      .attr("class", "axis")
-		      .call(d3.axisLeft(y).ticks(null, "s"))
+		      //.call(d3.axisLeft(y).ticks(null, "s"))
+		      .call(d3.axisLeft(y).ticks(5))
 		    .append("text")
 		      .attr("x", 2)
 		      .attr("y", y(y.ticks().pop()) + 0.5)
-		      .attr("dy", "0.32em")
+		      .attr("dy", "-1.0em")
 		      .attr("fill", "#000")
 		      .attr("font-weight", "bold")
-		      .attr("text-anchor", "start")
-		      .text("# of occurrences");
+		      .attr("text-anchor", "middle")
+		      .text("percentage")
+		      //.text("# of occurrences");
 
 		  var legend = g.append("g")
 		      .attr("font-family", "sans-serif")
@@ -223,6 +286,7 @@
 								return "Default";
 							}
 					 });
+					 
 		}
 
 
@@ -300,27 +364,50 @@
 							g.append("text")
 									.attr("transform",
 												"translate(" + (width/2) + " ," +
-																			 (height + margin.top + 20) + ")")
+																			 (height + margin.top + 50) + ")")
 									.style("text-anchor", "middle")
 									.text(type);
 
 				  // add the x Axis
+				  
+				var x_axis;
+				if (type == "AGE") {
+					x_axis = d3.axisBottom(x);
+				}
+				else {
+					x_axis = d3.axisBottom(x)
+					.tickValues(values)
+					.tickFormat(function(d,i){ return labels[i] });
+				}  
+				if (type != "AGE") {
 					g.append("g")
-				      .attr("class", "axis")
-				      .attr("transform", "translate(0," + height + ")")
-				      .call(d3.axisBottom(x))
-
+						.attr("class", "axis")
+						.attr("transform", "translate(0," + height + ")")		      
+						.call(x_axis)
+						.selectAll("text")
+						.style("text-anchor", "end")
+						.attr("dx", "-.8em")
+						.attr("dy", ".15em")
+						.attr("transform", "rotate(-65)");
+				}
+				else {
+					g.append("g")
+					  .attr("class", "axis")
+					  .attr("transform", "translate(0," + height + ")")		      
+					  .call(x_axis)
+				  }
+				  
 				  g.append("g")
 				      .attr("class", "axis")
-				      .call(d3.axisLeft(y).ticks(null, "s"))
+				      .call(d3.axisLeft(y).ticks(5))
 				    .append("text")
 				      .attr("x", 2)
 				      .attr("y", y(y.ticks().pop()) + 0.5)
-				      .attr("dy", "0.32em")
+				      .attr("dy", "-1.0em")
 				      .attr("fill", "#000")
 				      .attr("font-weight", "bold")
 				      .attr("text-anchor", "start")
-				      .text("# of occurrences");
+				      .text("percentage");
 
 				  var legend = g.append("g")
 				      .attr("font-family", "sans-serif")
@@ -524,22 +611,27 @@
 
 	function draw_chart(data) {
 
-		var container_dimensions = {width: 900, height: 500},
-			margins = {top: 10, right: 20, bottom: 30, left: 60},
+		var container_dimensions = {width: 700, height: 400},
+			margins = {top: -50, right: 20, bottom: 50, left: 50},
 			chart_dimensions = {
 				width: container_dimensions.width - margins.left - margins.right,
 				height: container_dimensions.height - margins.top - margins.bottom
 			};
 
-		time_scale = d3.scaleTime()
+		time_scale = d3.scaleLinear()
 			.range([0, chart_dimensions.width - 100])
-			.domain([0, 600]);
+			.domain([0, 600]);		
 
 		amount_scale = d3.scaleLinear()
 			.range([chart_dimensions.height, 0])
 			.domain([min_value,max_value]);
 
+		var tickLabels = ["", "Sept","Aug","July","June","May","April"]
+		
 		var time_axis = d3.axisBottom(time_scale)
+			.ticks(6)
+			.tickValues([0, 100, 200, 300, 400, 500, 600])
+			.tickFormat(function(d,i){ return tickLabels[i] });
 
 		var amount_axis = d3.axisLeft(amount_scale)
 
@@ -629,7 +721,7 @@
 
 		svg.append("g")
 			.attr("class", "xaxis")
-			.attr("transform", "translate(0," + width + ")")
+			.attr("transform", "translate(0," + height + ")")
 			.call(xAxis)
 			.append("text")
 			.attr("class", "label")
