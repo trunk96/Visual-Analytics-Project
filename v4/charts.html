@@ -114,20 +114,20 @@
 		if (t=="AGE"){
 			svg.attr("width", 960).attr("height", 250).style("float", "left")
 			svg.append("rect")
-		      .attr("x", 895)
-		      .attr("y", 100)
-		      .attr("width", 19)
-		      .attr("height", 19)
-		      .attr("fill", "grey")
-		      .on("click", function() {
-				  console.log("Click")
-				  //age_sorting()
-			})
+				.attr("x", 750)
+				.attr("y", 220)
+				.attr("width", 19)
+				.attr("height", 19)
+				.attr("fill", "grey")
+				.on("click", function() {
+					sort_age=true;
+					d3.csv("AGE_frequency.csv", age_sorting)
+				})
 		      
 		    svg.append("text")
-				.attr("x", 920)
-				.attr("y", 115)
-				.text("Sort")
+				.attr("x", 780)
+				.attr("y", 235)
+				.text("Sort by default probability")
 		}
 		else if (t=="SEX"){
 			svg.attr("width", 250).attr("height", 250).style("float", "left")
@@ -161,262 +161,329 @@
 
 		d3.csv(type+"_frequency.csv", compute_total, draw_stack);
 
-/*
-		function age_sorting() {
-			sort_age=true;
-			var type="AGE";
+		function age_sorting(data) {
 			var prev_height=d3.select("#"+type).attr("height");
 			var prev_width=d3.select("#"+type).attr("width");
 			d3.select("#"+type).remove()
 			var svg=d3.select("#div-"+type)
-			.append("svg")
-			.attr("width", prev_width)
-			.attr("height", prev_height)
-			.attr("id", type)
-			.style("float", "left");
-			g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-			d3.csv(type+"_frequency.csv", draw_stack);
-		}
-	*/
-		function draw_stack (error, data) {
-		  //if (error) throw error;
-
-		  var keys = data.columns.slice(1);
-
-			if (type=="SEX" || type=="MARRIAGE" || type=="EDUCATION" || sort_age == true){
-				data.sort(function(a, b) { return b ['1'] - a['1']; });
-			}
-		  x.domain(data.map(function(d) { return d[type]; }));
-		  y.domain([0, d3.max(data, function(d) { return d.total; })]).nice();
-		  z.domain(keys);
-
-		  g.append("g")
-		    .selectAll("g")
-		    .data(d3.stack().keys(keys).order(d3.stackOrderReverse)(data))
-		    .enter().append("g")
-		      .attr("fill", function(d) { return z(d.key); })
-		    .selectAll("rect")
-		    .data(function(d) { return d; })
-		    .enter().append("rect")
-		      .attr("x", function(d) { return x(d.data[type]); })
-		      .attr("y", function(d) { return y(d[1]); })
-		      .attr("height", function(d) { return y(d[0]) - y(d[1]); })
-		      .attr("width", x.bandwidth());
-
-			g.append("text")
-					.attr("transform",
-								"translate(" + (width/2) + " ," +
-															 (height + margin.top + 50) + ")")
-					.style("text-anchor", "middle")
-					.text(type);
-
-			var x_axis;
-			if (type == "AGE") {
-				x_axis = d3.axisBottom(x);
-			}
-			else {
-				x_axis = d3.axisBottom(x)
-				.tickValues(values)
-				.tickFormat(function(d,i){ return labels[i] });
-			}			
-			  
-			if (type != "AGE") {
-				g.append("g")
-					.attr("class", "axis")
-					.attr("transform", "translate(0," + height + ")")		      
-					.call(x_axis)
-					.selectAll("text")
-					.style("text-anchor", "end")
-					.attr("dx", "-.8em")
-					.attr("dy", ".15em")
-					.attr("transform", "rotate(-65)");
-				}
-			else {
-				g.append("g")
-				  .attr("class", "axis")
-				  .attr("transform", "translate(0," + height + ")")		      
-				  .call(x_axis)
-			  }
-
-		  g.append("g")
-		      .attr("class", "axis")
-		      //.call(d3.axisLeft(y).ticks(null, "s"))
-		      .call(d3.axisLeft(y).ticks(5))
-		    .append("text")
-		      .attr("x", 2)
-		      .attr("y", y(y.ticks().pop()) + 0.5)
-		      .attr("dy", "-1.0em")
-		      .attr("fill", "#000")
-		      .attr("font-weight", "bold")
-		      .attr("text-anchor", "middle")
-		      .text("percentage")
-		      //.text("# of occurrences");
-
-		  var legend = g.append("g")
-		      .attr("font-family", "sans-serif")
-		      .attr("font-size", 10)
-		      .attr("text-anchor", "start")
-		    .selectAll("g")
-		    .data(keys.slice().reverse())
-		    .enter().append("g")
-		      .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; })
-					.attr("class", "legend-"+type)
-					.attr("classification", function(d){
-						return d;
-					})
-					.on("click", to_barchart);
-
-		  legend.append("rect")
-		      .attr("x", width - 45)
-		      .attr("width", 19)
-		      .attr("height", 19)
-		      .attr("fill", z)
-
-
-		  legend.append("text")
-		      .attr("x", width -19)
-		      .attr("y", 9.5)
-		      .attr("dy", "0.32em")
-		      .text(function(d) {
-							if (d==0){
-								return "Correct";
-							}
-							else{
-								return "Default";
-							}
-					 });
-					 
-		}
-
-
-		function to_barchart(){
-			var selected_legend=this
-			d3.selectAll(".legend-"+type).attr("opacity", "0.4");
-			d3.select(selected_legend).attr("opacity", "1");
-			d3.csv(type+"_frequency.csv", function(d, i, columns){
-				//console.log(d);
-				if (d3.select(selected_legend).attr("classification")=="0"){
-					var t = d[0] = +d[[0]];
-			  	d.total = t;
-					//console.log(d.total)
-				}
-				else{
-					var t = d[1] = +d[1];
-					d.total = t;
-					//console.log(d.total)
-				}
-			  return d;
-			},function(data) {
-				console.log(data)
-				//d3.select("svg").selectAll("b").selectAll("rect").exit().transition().duration(500).attr("height", 0);
-				var prev_height=d3.select("#"+type).attr("height");
-				var prev_width=d3.select("#"+type).attr("width");
-				d3.select("#"+type).remove()
-				var svg=d3.select("#div-"+type)
 				.append("svg")
 				.attr("width", prev_width)
 				.attr("height", prev_height)
 				.attr("id", type)
 				.style("float", "left");
-				g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+			g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-				var x = d3.scaleBand()
-			    .rangeRound([0, width-100])
-			    .paddingInner(0.05)
-			    .align(0.1);
+			if (sort_age == true) {
+				g.append("rect")
+					.attr("x", 710)
+					.attr("y", 200)
+					.attr("width", 19)
+					.attr("height", 19)
+					.attr("fill", "grey")
+					.on("click", function() {
+						sort_age = false
+						d3.csv("AGE_frequency.csv", age_sorting)
+					})
+				  
+				g.append("text")
+					.attr("x", 740)
+					.attr("y", 215)
+					.text("Sort by age")
+			}
+			
+			else {
+				g.append("rect")
+				.attr("x", 710)
+				.attr("y", 200)
+				.attr("width", 19)
+				.attr("height", 19)
+				.attr("fill", "grey")
+				.on("click", function() {
+					sort_age=true;
+					d3.csv("AGE_frequency.csv", age_sorting)
+				})
+		      
+				g.append("text")
+					.attr("x", 740)
+					.attr("y", 215)
+					.text("Sort by default probability")
+			}
+			
+			d3.csv("AGE_frequency.csv", compute_total, draw_stack);
+		}
+	
+		function draw_stack (error, data) {			
+			//if (error) throw error;
+
+			var keys = data.columns.slice(1);
+
+			if (type=="SEX" || type=="MARRIAGE" || type=="EDUCATION" || sort_age == true){
+				data.sort(function(a, b) { return b ['1'] - a['1']; });
+			}
+
+			x.domain(data.map(function(d) { return d[type]; }));
+			y.domain([0, d3.max(data, function(d) { return d.total; })]).nice();
+			z.domain(keys);
+
+			g.append("g")				
+				.selectAll("g")
+				.data(d3.stack().keys(keys).order(d3.stackOrderReverse)(data))
+				.enter().append("g")
+					.attr("fill", function(d) { return z(d.key); })
+				.selectAll("rect")
+				.data(function(d) { return d; })
+				.enter().append("rect")
+					.attr("x", function(d) { return x(d.data[type]); })
+					.attr("y", function(d) { return y(d[1]); })
+					.attr("height", function(d) { return y(d[0]) - y(d[1]); })
+					.attr("width", x.bandwidth());
+
+			g.append("text")
+				.attr("transform",
+							"translate(" + (width/2) + " ," +
+														 (height + margin.top + 50) + ")")
+				.style("text-anchor", "middle")
+				.text(type);
+
+			var x_axis;
+			if (type != "AGE") {
+				x_axis = d3.axisBottom(x)
+					.tickValues(values)
+					.tickFormat(function(d,i){ return labels[i] });
+				
+				g.append("g")
+					.attr("class", "axis")
+					.attr("transform", "translate(0," + height + ")")		      
+					.call(x_axis)
+					.selectAll("text")
+						.style("text-anchor", "end")
+						.attr("dx", "-.8em")
+						.attr("dy", ".15em")
+						.attr("transform", "rotate(-65)");
+			}
+			else {
+				x_axis = d3.axisBottom(x);
+				g.append("g")
+					.attr("class", "axis")
+					.attr("transform", "translate(0," + height + ")")		      
+					.call(x_axis)
+			  }
+
+			g.append("g")
+				.attr("class", "axis")
+				//.call(d3.axisLeft(y).ticks(null, "s"))
+				.call(d3.axisLeft(y).ticks(5))
+				.append("text")
+					.attr("x", 2)
+					.attr("y", y(y.ticks().pop()) + 0.5)
+					.attr("dy", "-1.0em")
+					.attr("fill", "#000")
+					.attr("font-weight", "bold")
+					.attr("text-anchor", "middle")
+					.text("percentage")
+
+			var legend = g.append("g")
+				.attr("font-family", "sans-serif")
+				.attr("font-size", 10)
+				.attr("text-anchor", "start")
+				.selectAll("g")
+					.data(keys.slice().reverse())
+					.enter().append("g")
+						.attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; })
+							.attr("class", "legend-"+type)
+							.attr("classification", function(d){
+								return d;
+							})
+							.on("click", to_barchart);
+
+			legend.append("rect")
+				.attr("x", width - 45)
+				.attr("width", 19)
+				.attr("height", 19)
+				.attr("fill", z)
+
+			legend.append("text")
+				.attr("x", width -19)
+				.attr("y", 9.5)
+				.attr("dy", "0.32em")
+				.text(function(d) {				
+					if (d==0){
+						return "Correct";
+					}
+					else{
+						return "Default";
+					}
+				});				 
+		}
+
+		function to_barchart(sel_legend){
+			var selected_legend			
+			if (sel_legend != 0 && sel_legend != 1) 
+				selected_legend = sel_legend
+			else 
+				selected_legend= this
+			d3.selectAll(".legend-"+type).attr("opacity", "0.4");
+			d3.select(selected_legend).attr("opacity", "1");
+			d3.csv(type+"_frequency.csv", 
+				function(d, i, columns){
+					//console.log(d);
+					if (d3.select(selected_legend).attr("classification")=="0"){
+						var t = d[0] = +d[[0]];
+						d.total = t;
+						//console.log(d.total)
+					}
+					else{
+						var t = d[1] = +d[1];
+						d.total = t;
+						//console.log(d.total)
+					}
+				return d;
+			
+				},
+				function(data) {
+					//console.log(selected_legend)
+					//d3.select("svg").selectAll("b").selectAll("rect").exit().transition().duration(500).attr("height", 0);
+					var prev_height=d3.select("#"+type).attr("height");
+					var prev_width=d3.select("#"+type).attr("width");
+					d3.select("#"+type).remove()
+					
+					var svg=d3.select("#div-"+type)
+						.append("svg")
+						.attr("width", prev_width)
+						.attr("height", prev_height)
+						.attr("id", type)
+						.style("float", "left");
+						
+					g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+					if (sort_age == true) {
+						g.append("rect")
+							.attr("x", 710)
+							.attr("y", 200)
+							.attr("width", 19)
+							.attr("height", 19)
+							.attr("fill", "grey")
+							.on("click", function() {
+								sort_age = false
+								to_barchart(selected_legend);
+							})
+						  
+						g.append("text")
+							.attr("x", 740)
+							.attr("y", 215)
+							.text("Sort by age")
+					}
+					
+					else {
+						g.append("rect")
+						.attr("x", 710)
+						.attr("y", 200)
+						.attr("width", 19)
+						.attr("height", 19)
+						.attr("fill", "grey")
+						.on("click", function() {
+							sort_age=true;
+							to_barchart(selected_legend);
+						})
+		      
+						g.append("text")
+							.attr("x", 740)
+							.attr("y", 215)
+							.text("Sort by default probability")
+					}
+
+					var x = d3.scaleBand()
+						.rangeRound([0, width-100])
+						.paddingInner(0.05)
+						.align(0.1);
 
 					var y = d3.scaleLinear()
-			    .rangeRound([height, 50]);
+						.rangeRound([height, 50]);
 
-				var z=d3.scaleOrdinal(d3.schemeCategory10)
+					var z=d3.scaleOrdinal(d3.schemeCategory10)
 
-				if (type=="SEX" || type=="MARRIAGE" || type=="EDUCATION"){
-					data.sort(function(a, b) { return b ['1'] - a['1']; });
-				}
+					if (type=="SEX" || type=="MARRIAGE" || type=="EDUCATION" || sort_age == true){
+						data.sort(function(a, b) { return b ['1'] - a['1']; });
+					}
 
 					x.domain(data.map(function(d) { return d[type]; }));
-				  y.domain([0, d3.max(data, function(d) {
+					y.domain([0, d3.max(data, function(d) {
 						//console.log(d.total)
 						return d.total; })]).nice();
-					//console.log(y.domain())
+						//console.log(y.domain())
 					z.domain(["0", "1"])
 
 					var keys = data.columns.slice(1);
 
 
-				  // append the rectangles for the bar chart
+					// append the rectangles for the bar chart
 					g.append("g")
-				    .selectAll("g")
-				      .data(data)
-				    .enter().append("rect")
-				      .attr("x", function(d) { return x(d[type]); })
-				      .attr("width", x.bandwidth())
-				      .attr("y", function(d) { return y(d[d3.select(selected_legend).attr("classification")]); })
+						.selectAll("g")
+						.data(data)
+						.enter().append("rect")
+							.attr("x", function(d) { return x(d[type]); })
+							.attr("width", x.bandwidth())
+							.attr("y", function(d) { return y(d[d3.select(selected_legend).attr("classification")]); })
 							.transition()
-							.duration(750)
-				      .attr("height", function(d) {
-								//console.log(height);
-								return height - y(d[d3.select(selected_legend).attr("classification")]); })
-							.attr("fill", z(d3.select(selected_legend).attr("classification")));
+								.duration(750)
+						.attr("height", function(d) {
+							//console.log(height);
+							return height - y(d[d3.select(selected_legend).attr("classification")]); 
+						})
+						.attr("fill", z(d3.select(selected_legend).attr("classification")));
 
+					g.append("text")
+						.attr("transform",
+								"translate(" + (width/2) + " ," +
+										(height + margin.top + 50) + ")")
+						.style("text-anchor", "middle")
+						.text(type);
 
-							g.append("text")
-									.attr("transform",
-												"translate(" + (width/2) + " ," +
-																			 (height + margin.top + 50) + ")")
-									.style("text-anchor", "middle")
-									.text(type);
-
-				  // add the x Axis
-				  
-				var x_axis;
-				if (type == "AGE") {
-					x_axis = d3.axisBottom(x);
-				}
-				else {
-					x_axis = d3.axisBottom(x)
-					.tickValues(values)
-					.tickFormat(function(d,i){ return labels[i] });
-				}  
-				if (type != "AGE") {
+					// add the x Axis				  
+					var x_axis;
+					if (type != "AGE") {
+						x_axis = d3.axisBottom(x)
+							.tickValues(values)
+							.tickFormat(function(d,i){ return labels[i] });
+						
+						g.append("g")
+							.attr("class", "axis")
+							.attr("transform", "translate(0," + height + ")")		      
+							.call(x_axis)
+							.selectAll("text")
+								.style("text-anchor", "end")
+								.attr("dx", "-.8em")
+								.attr("dy", ".15em")
+								.attr("transform", "rotate(-65)");
+					}
+					else {
+						x_axis = d3.axisBottom(x);
+						g.append("g")
+							.attr("class", "axis")
+							.attr("transform", "translate(0," + height + ")")		      
+							.call(x_axis)
+					  }
+					  
 					g.append("g")
 						.attr("class", "axis")
-						.attr("transform", "translate(0," + height + ")")		      
-						.call(x_axis)
-						.selectAll("text")
-						.style("text-anchor", "end")
-						.attr("dx", "-.8em")
-						.attr("dy", ".15em")
-						.attr("transform", "rotate(-65)");
-				}
-				else {
-					g.append("g")
-					  .attr("class", "axis")
-					  .attr("transform", "translate(0," + height + ")")		      
-					  .call(x_axis)
-				  }
-				  
-				  g.append("g")
-				      .attr("class", "axis")
-				      .call(d3.axisLeft(y).ticks(5))
-				    .append("text")
-				      .attr("x", 2)
-				      .attr("y", y(y.ticks().pop()) + 0.5)
-				      .attr("dy", "-1.0em")
-				      .attr("fill", "#000")
-				      .attr("font-weight", "bold")
-				      .attr("text-anchor", "start")
-				      .text("percentage");
+						.call(d3.axisLeft(y).ticks(5))
+						.append("text")
+							.attr("x", 2)
+							.attr("y", y(y.ticks().pop()) + 0.5)
+							.attr("dy", "-1.0em")
+							.attr("fill", "#000")
+							.attr("font-weight", "bold")
+							.attr("text-anchor", "start")
+							.text("percentage");
 
-				  var legend = g.append("g")
-				      .attr("font-family", "sans-serif")
-				      .attr("font-size", 10)
-				      .attr("text-anchor", "start")
-				    .selectAll("g")
-				    .data(keys.slice().reverse())
-				    .enter().append("g")
-				      .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; })
+					var legend = g.append("g")
+						.attr("font-family", "sans-serif")
+						.attr("font-size", 10)
+						.attr("text-anchor", "start")
+						.selectAll("g")
+							.data(keys.slice().reverse())
+							.enter().append("g")
+							.attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; })
 							.attr("class", "legend-"+type)
 							.attr("classification", function(d){
 								return d;
@@ -429,32 +496,28 @@
 									return "0.4"
 								}
 							})
-							.on("click", to_barchart);
+						.on("click", to_barchart);
 
-							legend.append("rect")
-						      .attr("x", width - 45)
-						      .attr("width", 19)
-						      .attr("height", 19)
-						      .attr("fill", z)
+					legend.append("rect")
+						.attr("x", width - 45)
+						.attr("width", 19)
+						.attr("height", 19)
+						.attr("fill", z)
 
-
-						  legend.append("text")
-						      .attr("x", width -19)
-						      .attr("y", 9.5)
-						      .attr("dy", "0.32em")
-						      .text(function(d) {
-											if (d==0){
-												return "Correct";
-											}
-											else{
-												return "Default";
-											}
-									 });
-
-					});
-
-
-
+					legend.append("text")
+						.attr("x", width -19)
+						.attr("y", 9.5)
+						.attr("dy", "0.32em")
+						.text(function(d) {
+							if (d==0){
+								return "Correct";
+							}
+							else{
+								return "Default";
+							}
+						});
+				}
+			);
 		}
 
 	}
