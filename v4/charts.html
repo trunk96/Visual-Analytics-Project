@@ -1081,6 +1081,7 @@
 			.attr("target", function(d) {
 				return d.target
 			})
+			.attr("clicked", "false")
 			.attr("class","selected")
 			.attr("identifier", function(d) {
 				return d.ID;
@@ -1095,13 +1096,13 @@
 					.style("top", (d3.event.pageY - 28) + "px");
 			})
 			.on("mouseout", function(d) {
-				if (this.getAttribute("fill") != "red") {   //these are the points selected by the stack barcharts
+				if (this.getAttribute("fill") != "red") {
 				d3.select(this).transition().duration(200).attr("r", 2);
 				div.transition()
 					.duration(500)
 					.style("opacity", 0);
 			}
-			else{
+			else{	//these are the points selected by the stack barcharts
 				d3.select(this).transition().duration(200).attr("r", 5);
 				div.transition()
 					.duration(500)
@@ -1109,6 +1110,23 @@
 			}})
 			.on("click", function(d) {
 				draw_line(d);
+				if (this.getAttribute("clicked") == "false"){
+					var points = d3.select("#scatterplot").selectAll("circle").filter(function() {
+						return this.getAttribute("fill") == "red"
+					})
+					for (i=0;i<points["_groups"][0].length;i++) {
+						points["_groups"][0][i].setAttribute("fill",color(points["_groups"][0][i].getAttribute("target")))
+						points["_groups"][0][i].setAttribute("r","2")
+					}
+					this.setAttribute("clicked", "true");
+					this.setAttribute("r", "5");
+					this.setAttribute("fill", "red");
+				}
+				else{
+					this.setAttribute("clicked", "false");
+					this.setAttribute("r", "2");
+					this.setAttribute("fill", color(this.getAttribute("target")));
+				}
 			});
 
 
