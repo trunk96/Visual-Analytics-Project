@@ -1109,15 +1109,16 @@
 					.style("opacity", 0);
 			}})
 			.on("click", function(d) {
+				var points = d3.select("#scatterplot").selectAll("circle").filter(function() {
+					return this.getAttribute("fill") == "red"
+				})
+				for (i=0;i<points["_groups"][0].length;i++) {
+					points["_groups"][0][i].setAttribute("fill",color(points["_groups"][0][i].getAttribute("target")));
+					points["_groups"][0][i].setAttribute("r","2");
+				}
 				draw_line(d);
 				if (this.getAttribute("clicked") == "false"){
-					var points = d3.select("#scatterplot").selectAll("circle").filter(function() {
-						return this.getAttribute("fill") == "red"
-					})
-					for (i=0;i<points["_groups"][0].length;i++) {
-						points["_groups"][0][i].setAttribute("fill",color(points["_groups"][0][i].getAttribute("target")))
-						points["_groups"][0][i].setAttribute("r","2")
-					}
+
 					this.setAttribute("clicked", "true");
 					this.setAttribute("r", "5");
 					this.setAttribute("fill", "red");
