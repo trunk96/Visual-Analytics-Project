@@ -122,10 +122,6 @@
 		draw_parallel();
 	});
 
-	//d3.csv("AGE_frequency.csv", compute_total, draw_stackbarchart);
-
-
-
 	function draw_parallel(){
 		var margin = {top: 30, right: 30, bottom: 60, left: 10},
 			width = 550 - margin.left - margin.right,
@@ -366,6 +362,9 @@
 				.selectAll("rect")
 					.data(function(d) { return d; })
 					.enter().append("rect")
+						.attr("id", function(d) {
+							return type+"_"+d.data[type]
+						})
 						.attr("x", function(d) { return x(d.data[type]); })
 						.attr("y", function(d) { return y(d[1]); })
 						.attr("height", function(d) { return y(d[0]) - y(d[1]); })
@@ -401,6 +400,14 @@
 						.attr('transform','translate(10, -10)')
 						.remove()
 				})
+			
+				
+			g.selectAll("rect").filter(function() {
+					return this.getAttribute("id") != "is_sorting_rect"
+				})				
+				.on('click', function() {
+					highlight_points(this.getAttribute("id"),this.getAttribute("y"))
+					})
 
 			g.append("text")
 				.attr("transform",
@@ -590,6 +597,9 @@
 						.selectAll("g")
 						.data(data)
 						.enter().append("rect")
+							.attr("id", function(d) {
+								return type+"_"+d[type]
+							})
 							.attr("x", function(d) { return x(d[type]); })
 							.attr("width", x.bandwidth())
 							.attr("y", function(d) { return y(d[d3.select(selected_legend).attr("classification")]); })
@@ -730,6 +740,30 @@
 
 	function draw_line(d) {
 
+		d3.select("#line_chart").selectAll("g").filter(function() {
+				return this.getAttribute("id") != "line_chart" && 
+					this.getAttribute("class") != "xaxis" &&
+					this.getAttribute("class") != "yaxis" &&
+					this.getAttribute("class") != "tick" &&
+					this.getAttribute("class") != "domain"
+			}).remove()
+			
+		var types = ["AGE","SEX","MARRIAGE","EDUCATION"]
+		for (i=0;i<4;i++) {
+			var bar = d3.selectAll("#"+types[i]).selectAll("rect").filter(function() {
+				return this.getAttribute("fill") == "red"
+			})
+			if(bar != null)
+				bar.attr("fill",null)
+		}
+		
+		var points = d3.select("#scatterplot").selectAll("circle").filter(function() {
+			return this.getAttribute("fill") == "red"
+		})
+		for (i=0;i<points["_groups"][0].length;i++) {
+			points["_groups"][0][i].setAttribute("fill",color(points["_groups"][0][i].getAttribute("target")))
+		}
+		
 		var key = d.ID
 
 		var bill_values = [
@@ -749,10 +783,15 @@
 		var g = d3.select("#line_chart")
 				.append('g')
 				.attr('id', key)
-
+		
+		g.append("text")
+			.attr('x', 15)
+			.attr('y', 350)
+			.text("ID: "+key)
+		
 		g.append("path")
 			.attr("d", line_bill(bill_values))
-			.attr("stroke", "blue")
+			.attr("stroke", color(2))
 			.attr("stroke-width", 3)
 			.attr("fill", "none");
 
@@ -763,7 +802,7 @@
             .attr('cx', function(d) {return time_scale(d.x_axis)})
             .attr('cy', function(d) {return amount_scale(d.y_axis)})
             .attr('r',5)
-            .attr("stroke", "blue")
+            .attr("stroke", color(2))
 			.attr("stroke-width", 3);
 
 		var pay_values = [
@@ -786,7 +825,7 @@
 
 		p.append("path")
 			.attr("d", line_pay(pay_values))
-			.attr("stroke", "green")
+			.attr("stroke", color(3))
 			.attr("stroke-width", 3)
 			.attr("fill", "none");
 
@@ -797,7 +836,7 @@
             .attr('cx', function(d) {return time_scale(d.x_axis)})
             .attr('cy', function(d) {return amount_scale(d.y_axis)})
             .attr('r',5)
-            .attr("stroke", "green")
+            .attr("stroke", color(3))
 			.attr("stroke-width", 3);
 
 		var enter_duration = 1000;
@@ -861,8 +900,69 @@
                     .attr('transform','translate(10, -10)')
                     .remove()
             })
+            
+		highlight_bars(d.AGE,d.SEX,d.MARRIAGE,d.EDUCATION,d.target)
 	}
 
+	function highlight_bars(age,sex,marriage,education,classification) {
+		d3.selectAll("#AGE_"+age).filter(function() {
+			return this.parentNode.getAttribute("fill") == color(classification)
+		}).attr("fill","red")
+		
+		d3.selectAll("#SEX_"+sex).filter(function() {
+			return this.parentNode.getAttribute("fill") == color(classification)
+		}).attr("fill","red")
+		
+		d3.selectAll("#MARRIAGE_"+marriage).filter(function() {
+			return this.parentNode.getAttribute("fill") == color(classification)
+		}).attr("fill","red")
+		
+		d3.selectAll("#EDUCATION_"+education).filter(function() {
+			return this.parentNode.getAttribute("fill") == color(classification)
+		}).attr("fill","red")
+	}
+	
+	function highlight_points(id,y) {
+		
+		var types = ["AGE","SEX","MARRIAGE","EDUCATION"]
+		for (i=0;i<4;i++) {
+			var bar = d3.selectAll("#"+types[i]).selectAll("rect").filter(function() {
+				return this.getAttribute("fill") == "red"
+			})
+			if(bar != null)
+				bar.attr("fill",null)
+		}
+		
+		var points = d3.select("#scatterplot").selectAll("circle").filter(function() {
+			return this.getAttribute("fill") == "red"
+		})
+		for (i=0;i<points["_groups"][0].length;i++) {
+			points["_groups"][0][i].setAttribute("fill",color(points["_groups"][0][i].getAttribute("target")))
+		}
+		
+		var rows_array = []
+		var classification
+		if (y==0) classification = 0
+		else classification = 1
+		
+		d3.selectAll("#"+id).filter(function() {
+			return this.parentNode.getAttribute("fill") == color(classification)
+		}).attr("fill","red")
+		
+		d3.csv("pca.csv", function(rows) {
+			rows_array = rows.filter(function(d) {
+				return d[id.split("_")[0]] == id.split("_")[1] && d.target == classification
+			});
+			for (i=0;i<rows_array.length;i++) {
+				id_point = rows_array[i]["ID"]
+				d3.select("#scatterplot").selectAll("circle")
+					.filter(function(d) {return this.getAttribute("identifier") == id_point})
+					.attr("fill","red")
+			}
+			
+		})
+	}
+	
 	function resolve_value(key,attr) {
 		d3.csv("pca.csv", function(rows) {
 			row = rows.filter(function(d) {
@@ -885,7 +985,7 @@
 		})
 	}
 
-	function draw_chart(data) {
+	function draw_linechart(data) {
 
 		var container_dimensions = {width: 700, height: 400},
 			margins = {top: -50, right: 20, bottom: 50, left: 50},
@@ -1066,7 +1166,7 @@
 				}
 			});
 
-		draw_chart();
+		draw_linechart();
 	}
 </script>
 
