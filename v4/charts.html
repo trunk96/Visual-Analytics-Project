@@ -50,27 +50,27 @@
 		.yaxis text{
 			fill: black;
 		}
+		
 		.background path {
-  fill: none;
+		  fill: none;
+		  shape-rendering: crispEdges;
+		}
 
-  shape-rendering: crispEdges;
-}
+		.foreground path {
+		  fill: none;
 
-.foreground path {
-  fill: none;
+		}
+		.axis line,
+		.axis path {
+		  fill: none;
+		  stroke: #000;
+		  shape-rendering: crispEdges;
+		}
 
-}
-.axis line,
-.axis path {
-  fill: none;
-  stroke: #000;
-  shape-rendering: crispEdges;
-}
-
-.axis text {
-  text-shadow: 0 1px 0 #fff, 1px 0 0 #fff, 0 -1px 0 #fff, -1px 0 0 #fff;
-  cursor: move;
-}
+		.axis text {
+		  text-shadow: 0 1px 0 #fff, 1px 0 0 #fff, 0 -1px 0 #fff, -1px 0 0 #fff;
+		  cursor: move;
+		}
 	</style>
 </head>
 
@@ -105,8 +105,6 @@
 
 	var data = [];
 
-	original_data = d3.csv("pca.csv")
-
 	d3.csv("standardized_data.csv", function(rows) {
 		max_value  = d3.max(rows, function(d){
 			return Math.max.apply(Math, [+d.BILL_AMT1, +d.BILL_AMT2, +d.BILL_AMT3, +d.BILL_AMT4, +d.BILL_AMT5, +d.BILL_AMT6, +d.PAY_AMT1, +d.PAY_AMT2, +d.PAY_AMT3, +d.PAY_AMT4, +d.PAY_AMT5, +d.PAY_AMT6]);
@@ -128,115 +126,113 @@
 
 
 
-function draw_parallel(){
+	function draw_parallel(){
 		var margin = {top: 30, right: 30, bottom: 60, left: 10},
-    width = 550 - margin.left - margin.right,
-    height = 400 - margin.top - margin.bottom;
+			width = 550 - margin.left - margin.right,
+			height = 400 - margin.top - margin.bottom;
 
 		var x = d3.scalePoint().range([0, width]).padding(1);
-    y = {},
-    dragging = {};
+			y = {},
+			dragging = {};
 
 		var line = d3.line(),
-    axis = d3.axisLeft(),
-    background,
-    foreground;
+			axis = d3.axisLeft(),
+			background,
+			foreground;
 
 		var svg = d3.select("#parallel")
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
-  	.append("g")
-    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+			.attr("width", width + margin.left + margin.right)
+			.attr("height", height + margin.top + margin.bottom)
+			.append("g")
+				.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
 		d3.csv("pca.csv", function(d, i){
 				if (i>-1) return d;
-		}, function(error, rows) {
+			}, function(error, rows) {
 
-  // Extract the list of dimensions and create a scale for each.
-  x.domain(dimensions = d3.keys(rows[0]).filter(function(d) {
-    return (d == "X1" || d == "X2" || d == "X3" || d == "X4" || d == "X5" || d == "X6") && (y[d] = d3.scaleLinear()
-        .domain(d3.extent(rows, function(p) { return +p[d]; }))
-        .range([height, 0]));
-  }));
-	rows=rows.sort(function(a,b){ return d3.ascending(a.target, b.target);});
-  // Add grey background lines for context.
-  background = svg.append("g")
-      .attr("class", "background")
-    .selectAll("path")
-      .data(rows)
-    .enter().append("path")
-      .attr("d", path);
+				// Extract the list of dimensions and create a scale for each.
+				x.domain(dimensions = d3.keys(rows[0]).filter(function(d) {
+					return (d == "X1" || d == "X2" || d == "X3" || d == "X4" || d == "X5" || d == "X6") && (y[d] = d3.scaleLinear()
+						.domain(d3.extent(rows, function(p) { return +p[d]; }))
+						.range([height, 0]));
+				}));
+				rows=rows.sort(function(a,b){ return d3.ascending(a.target, b.target);});
+				// Add grey background lines for context.
+				background = svg.append("g")
+					.attr("class", "background")
+					.selectAll("path")
+						.data(rows)
+						.enter().append("path")
+							.attr("d", path);
 
-  // Add blue foreground lines for focus.
-  foreground = svg.append("g")
-      .attr("class", "foreground")
-    .selectAll("path")
-      .data(rows)
-    .enter().append("path")
-      .attr("d", path)
-			.attr("stroke", function(d){
-				return color(d.target);
-			});
+				// Add blue foreground lines for focus.
+				foreground = svg.append("g")
+					.attr("class", "foreground")
+					.selectAll("path")
+						.data(rows)
+						.enter().append("path")
+							.attr("d", path)
+							.attr("stroke", function(d){
+								return color(d.target);
+							});
 
-  // Add a group element for each dimension.
-  var g = svg.selectAll(".dimension")
-      .data(dimensions)
-    .enter().append("g")
-      .attr("class", "dimension")
-      .attr("transform", function(d) { return "translate(" + x(d) + ")"; })
-      .call(d3.drag()
-        .on("start", function(d) {
-          dragging[d] = x(d);
-          background.attr("visibility", "hidden");
-        })
-        .on("drag", function(d) {
-          dragging[d] = Math.min(width, Math.max(0, d3.event.x));
-          foreground.attr("d", path);
-          dimensions.sort(function(a, b) { return position(a) - position(b); });
-          x.domain(dimensions);
-          g.attr("transform", function(d) { return "translate(" + position(d) + ")"; })
-        })
-        .on("end", function(d) {
-          delete dragging[d];
-          transition(d3.select(this)).attr("transform", "translate(" + x(d) + ")");
-          transition(foreground).attr("d", path);
-          background
-              .attr("d", path)
-            .transition()
-              .delay(500)
-              .duration(0)
-              .attr("visibility", null);
-        }));
+				// Add a group element for each dimension.
+				var g = svg.selectAll(".dimension")
+					.data(dimensions)
+					.enter().append("g")
+						.attr("class", "dimension")
+						.attr("transform", function(d) { return "translate(" + x(d) + ")"; })
+						.call(d3.drag()
+						.on("start", function(d) {
+							dragging[d] = x(d);
+							background.attr("visibility", "hidden");
+						})
+						.on("drag", function(d) {
+							dragging[d] = Math.min(width, Math.max(0, d3.event.x));
+							foreground.attr("d", path);
+							dimensions.sort(function(a, b) { return position(a) - position(b); });
+							x.domain(dimensions);
+							g.attr("transform", function(d) { return "translate(" + position(d) + ")"; })
+						})
+						.on("end", function(d) {
+							delete dragging[d];
+							transition(d3.select(this)).attr("transform", "translate(" + x(d) + ")");
+							transition(foreground).attr("d", path);
+							background
+								.attr("d", path)
+								.transition()
+								.delay(500)
+								.duration(0)
+								.attr("visibility", null);
+						}));
 
-  // Add an axis and title.
-  g.append("g")
-      .attr("class", "axis")
-      .each(function(d) { d3.select(this).call(axis.scale(y[d])); })
-    .append("text")
-      .style("text-anchor", "middle")
-      .attr("y", -9)
-      .text(function(d) { return d; });
-});
+				// Add an axis and title.
+				g.append("g")
+					.attr("class", "axis")
+					.each(function(d) { d3.select(this).call(axis.scale(y[d])); })
+						.append("text")
+							.style("text-anchor", "middle")
+							.attr("y", -9)
+							.text(function(d) { return d; });
+				});
 
-function position(d) {
-  var v = dragging[d];
-  return v == null ? x(d) : v;
-}
+		function position(d) {
+			var v = dragging[d];
+			return v == null ? x(d) : v;
+		}
 
-function transition(g) {
-  return g.transition().duration(500);
-}
+		function transition(g) {
+			return g.transition().duration(500);
+		}
 
-// Returns the path for a given data point.
-function path(d) {
-  return line(dimensions.map(function(p) { return [position(p), y[p](d[p])]; }));
-}
-
-
+		// Returns the path for a given data point.
+		function path(d) {
+			return line(dimensions.map(function(p) { return [position(p), y[p](d[p])]; }));
+		}
 	}
-
-
+	
 	function draw_stackbarchart(t){
+		
 		var type=t;
 		var values,labels;
 		var sort_age=false;
@@ -246,6 +242,7 @@ function path(d) {
 		if (t=="AGE"){
 			svg.attr("width", 960).attr("height", 250).style("float", "left")
 			svg.append("rect")
+				.attr("id","is_sorting_rect")
 				.attr("x", 750)
 				.attr("y", 220)
 				.attr("width", 19)
@@ -255,7 +252,8 @@ function path(d) {
 					sort_age=true;
 					d3.csv("AGE_frequency.csv", age_sorting)
 				})
-
+		   		
+		      
 		    svg.append("text")
 				.attr("x", 780)
 				.attr("y", 235)
@@ -307,6 +305,7 @@ function path(d) {
 
 			if (sort_age == true) {
 				g.append("rect")
+					.attr("id","is_sorting_rect")
 					.attr("x", 710)
 					.attr("y", 200)
 					.attr("width", 19)
@@ -316,35 +315,36 @@ function path(d) {
 						sort_age = false
 						d3.csv("AGE_frequency.csv", age_sorting)
 					})
-
+				  
 				g.append("text")
 					.attr("x", 740)
 					.attr("y", 215)
 					.text("Sort by age")
 			}
-
+			
 			else {
 				g.append("rect")
-				.attr("x", 710)
-				.attr("y", 200)
-				.attr("width", 19)
-				.attr("height", 19)
-				.attr("fill", "grey")
-				.on("click", function() {
-					sort_age=true;
-					d3.csv("AGE_frequency.csv", age_sorting)
+					.attr("id","is_sorting_rect")
+					.attr("x", 710)
+					.attr("y", 200)
+					.attr("width", 19)
+					.attr("height", 19)
+					.attr("fill", "grey")
+					.on("click", function() {
+						sort_age=true;
+						d3.csv("AGE_frequency.csv", age_sorting)
 				})
-
+		      
 				g.append("text")
 					.attr("x", 740)
 					.attr("y", 215)
 					.text("Sort by default probability")
 			}
-
+			
 			d3.csv("AGE_frequency.csv", compute_total, draw_stack);
 		}
-
-		function draw_stack (error, data) {
+	
+		function draw_stack (error, data) {			
 			//if (error) throw error;
 
 			var keys = data.columns.slice(1);
@@ -357,18 +357,50 @@ function path(d) {
 			y.domain([0, d3.max(data, function(d) { return d.total; })]).nice();
 			z.domain(keys);
 
-			g.append("g")
+			g.append("g")				
 				.selectAll("g")
 				.data(d3.stack().keys(keys).order(d3.stackOrderReverse)(data))
 				.enter().append("g")
-					.attr("fill", function(d) { return z(d.key); })
+					.attr("id", "g-"+type)
+					.attr("fill", function(d) { return z(d.key); })					
 				.selectAll("rect")
-				.data(function(d) { return d; })
-				.enter().append("rect")
-					.attr("x", function(d) { return x(d.data[type]); })
-					.attr("y", function(d) { return y(d[1]); })
-					.attr("height", function(d) { return y(d[0]) - y(d[1]); })
-					.attr("width", x.bandwidth());
+					.data(function(d) { return d; })
+					.enter().append("rect")
+						.attr("x", function(d) { return x(d.data[type]); })
+						.attr("y", function(d) { return y(d[1]); })
+						.attr("height", function(d) { return y(d[0]) - y(d[1]); })
+						.attr("width", x.bandwidth())			
+			
+			g.selectAll("rect").filter(function() {
+					return this.getAttribute("id") != "is_sorting_rect"
+				})						
+				.on('mouseover', function(d){
+					d3.select(".text_"+d.data[type]+this.getAttribute("y")).remove()
+					var y = parseInt(this.getAttribute("y")), height = parseInt(this.getAttribute("height")/2)
+					d3.select("#g-"+type)
+						.append('text')
+							.attr('x', (parseInt(this.getAttribute("x")) + parseInt(this.getAttribute("width")/2)))
+							.attr('y', function() {
+								if (y == 0)
+									return (height)
+								return y
+							})
+							.attr('fill',"black")
+							.attr('class', "text_"+d.data[type]+this.getAttribute("y"))
+					get_num_instances(type,d.data[type],this.getAttribute("y"))
+				})
+				
+			g.selectAll("rect").filter(function() {
+					return this.getAttribute("id") != "is_sorting_rect"
+				})				
+				.on('mouseout', function(d){
+					d3.select(".text_"+d.data[type]+this.getAttribute("y"))
+						.transition()
+						.duration(500)
+						.style('opacity',0)
+						.attr('transform','translate(10, -10)')
+						.remove()
+				})
 
 			g.append("text")
 				.attr("transform",
@@ -382,10 +414,10 @@ function path(d) {
 				x_axis = d3.axisBottom(x)
 					.tickValues(values)
 					.tickFormat(function(d,i){ return labels[i] });
-
+				
 				g.append("g")
 					.attr("class", "axis")
-					.attr("transform", "translate(0," + height + ")")
+					.attr("transform", "translate(0," + height + ")")		      
 					.call(x_axis)
 					.selectAll("text")
 						.style("text-anchor", "end")
@@ -397,7 +429,7 @@ function path(d) {
 				x_axis = d3.axisBottom(x);
 				g.append("g")
 					.attr("class", "axis")
-					.attr("transform", "translate(0," + height + ")")
+					.attr("transform", "translate(0," + height + ")")		      
 					.call(x_axis)
 			  }
 
@@ -438,25 +470,25 @@ function path(d) {
 				.attr("x", width -19)
 				.attr("y", 9.5)
 				.attr("dy", "0.32em")
-				.text(function(d) {
+				.text(function(d) {				
 					if (d==0){
 						return "Correct";
 					}
 					else{
 						return "Default";
 					}
-				});
+				});				 
 		}
 
 		function to_barchart(sel_legend){
-			var selected_legend
-			if (sel_legend != 0 && sel_legend != 1)
+			var selected_legend			
+			if (sel_legend != 0 && sel_legend != 1) 
 				selected_legend = sel_legend
-			else
+			else 
 				selected_legend= this
 			d3.selectAll(".legend-"+type).attr("opacity", "0.4");
 			d3.select(selected_legend).attr("opacity", "1");
-			d3.csv(type+"_frequency.csv",
+			d3.csv(type+"_frequency.csv", 
 				function(d, i, columns){
 					//console.log(d);
 					if (d3.select(selected_legend).attr("classification")=="0"){
@@ -470,7 +502,7 @@ function path(d) {
 						//console.log(d.total)
 					}
 				return d;
-
+			
 				},
 				function(data) {
 					//console.log(selected_legend)
@@ -478,50 +510,56 @@ function path(d) {
 					var prev_height=d3.select("#"+type).attr("height");
 					var prev_width=d3.select("#"+type).attr("width");
 					d3.select("#"+type).remove()
-
+					
 					var svg=d3.select("#div-"+type)
 						.append("svg")
 						.attr("width", prev_width)
 						.attr("height", prev_height)
 						.attr("id", type)
 						.style("float", "left");
+						
+					g = svg.append("g")
+						.attr("id","g-"+type)
+						.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-					g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-					if (sort_age == true) {
-						g.append("rect")
-							.attr("x", 710)
-							.attr("y", 200)
-							.attr("width", 19)
-							.attr("height", 19)
-							.attr("fill", "grey")
-							.on("click", function() {
-								sort_age = false
-								to_barchart(selected_legend);
-							})
-
-						g.append("text")
-							.attr("x", 740)
-							.attr("y", 215)
-							.text("Sort by age")
-					}
-
-					else {
-						g.append("rect")
-						.attr("x", 710)
-						.attr("y", 200)
-						.attr("width", 19)
-						.attr("height", 19)
-						.attr("fill", "grey")
-						.on("click", function() {
-							sort_age=true;
-							to_barchart(selected_legend);
-						})
-
-						g.append("text")
-							.attr("x", 740)
-							.attr("y", 215)
-							.text("Sort by default probability")
+					if (type == "AGE") {
+						if (sort_age == true) {
+							g.append("rect")
+								.attr("id","is_sorting_rect")
+								.attr("x", 710)
+								.attr("y", 200)
+								.attr("width", 19)
+								.attr("height", 19)
+								.attr("fill", "grey")
+								.on("click", function() {
+									sort_age = false
+									to_barchart(selected_legend);
+								})
+							  
+							g.append("text")
+								.attr("x", 740)
+								.attr("y", 215)
+								.text("Sort by age")
+						}
+						
+						else {
+							g.append("rect")
+								.attr("id","is_sorting_rect")
+								.attr("x", 710)
+								.attr("y", 200)
+								.attr("width", 19)
+								.attr("height", 19)
+								.attr("fill", "grey")
+								.on("click", function() {
+									sort_age=true;
+									to_barchart(selected_legend);
+								})
+				  
+							g.append("text")
+								.attr("x", 740)
+								.attr("y", 215)
+								.text("Sort by default probability")
+						}
 					}
 
 					var x = d3.scaleBand()
@@ -547,7 +585,6 @@ function path(d) {
 
 					var keys = data.columns.slice(1);
 
-
 					// append the rectangles for the bar chart
 					g.append("g")
 						.selectAll("g")
@@ -560,10 +597,41 @@ function path(d) {
 								.duration(750)
 						.attr("height", function(d) {
 							//console.log(height);
-							return height - y(d[d3.select(selected_legend).attr("classification")]);
+							return height - y(d[d3.select(selected_legend).attr("classification")]); 
 						})
 						.attr("fill", z(d3.select(selected_legend).attr("classification")));
 
+					g.selectAll("rect").filter(function() {
+							return this.getAttribute("id") != "is_sorting_rect"
+						})										
+						.on('mouseover', function(d){
+							d3.select(".text_"+d[type]+selected_legend.getAttribute("classification")).remove()
+							var y = parseInt(this.getAttribute("y")), height = parseInt(this.getAttribute("height")/2)
+							d3.select("#g-"+type)
+								.append('text')
+									.attr('x', (parseInt(this.getAttribute("x")) + parseInt(this.getAttribute("width")/2)))
+									.attr('y', function() {
+										if (y == 0)
+											return (height)
+										return y
+									})
+									.attr('fill',"black")
+									.attr('class', "text_"+d[type]+selected_legend.getAttribute("classification"))
+							get_num_instances(type,d[type],selected_legend.getAttribute("classification"))
+						})
+						
+					g.selectAll("rect").filter(function() {
+							return this.getAttribute("id") != "is_sorting_rect"
+						})					
+						.on('mouseout', function(d){
+							d3.select(".text_"+d[type]+selected_legend.getAttribute("classification"))
+								.transition()
+								.duration(500)
+								.style('opacity',0)
+								.attr('transform','translate(10, -10)')
+								.remove()
+						})
+				
 					g.append("text")
 						.attr("transform",
 								"translate(" + (width/2) + " ," +
@@ -571,16 +639,16 @@ function path(d) {
 						.style("text-anchor", "middle")
 						.text(type);
 
-					// add the x Axis
+					// add the x Axis				  
 					var x_axis;
 					if (type != "AGE") {
 						x_axis = d3.axisBottom(x)
 							.tickValues(values)
 							.tickFormat(function(d,i){ return labels[i] });
-
+						
 						g.append("g")
 							.attr("class", "axis")
-							.attr("transform", "translate(0," + height + ")")
+							.attr("transform", "translate(0," + height + ")")		      
 							.call(x_axis)
 							.selectAll("text")
 								.style("text-anchor", "end")
@@ -592,10 +660,10 @@ function path(d) {
 						x_axis = d3.axisBottom(x);
 						g.append("g")
 							.attr("class", "axis")
-							.attr("transform", "translate(0," + height + ")")
+							.attr("transform", "translate(0," + height + ")")		      
 							.call(x_axis)
-					  }
-
+					}
+					  
 					g.append("g")
 						.attr("class", "axis")
 						.call(d3.axisLeft(y).ticks(5))
@@ -803,6 +871,19 @@ function path(d) {
 			d3.select(".text_" + key).text(row[0][attr])
 		})
 	}
+	
+	function get_num_instances(type,row_id,classification) {
+		d3.csv(type+"_instances.csv", function(rows) {
+			var row = rows.filter(function(d) {				
+				return d[type] == row_id
+			});
+			if (classification == '0') {
+				d3.select(".text_" + row_id + classification).text(row[0][0])
+			} else {
+				d3.select(".text_" + row_id + classification).text(row[0][1])
+			}
+		})
+	}
 
 	function draw_chart(data) {
 
@@ -815,14 +896,14 @@ function path(d) {
 
 		time_scale = d3.scaleLinear()
 			.range([0, chart_dimensions.width - 100])
-			.domain([0, 600]);
+			.domain([0, 600]);		
 
 		amount_scale = d3.scaleLinear()
 			.range([chart_dimensions.height, 0])
 			.domain([min_value,max_value]);
 
 		var tickLabels = ["", "Sept","Aug","July","June","May","April"]
-
+		
 		var time_axis = d3.axisBottom(time_scale)
 			.ticks(6)
 			.tickValues([0, 100, 200, 300, 400, 500, 600])
@@ -946,7 +1027,7 @@ function path(d) {
 			 .attr("class", "selected");
 
 		legend.append("rect")
-			.attr("x", width-10)
+			.attr("x", width -10)
 			.attr("y", 20)
 			.attr("width", 12)
 			.attr("height", 12)
