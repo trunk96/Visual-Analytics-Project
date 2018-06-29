@@ -170,6 +170,12 @@
 							.attr("d", path)
 							.attr("stroke", function(d){
 								return color(d.target);
+							})
+							.attr("identifier", function(d){
+								return d.ID;
+							})
+							.attr("target", function(d){
+								return d.target;
 							});
 
 				// Add a group element for each dimension.
@@ -922,6 +928,23 @@
 		}).attr("fill","red")
 	}
 
+
+	function highligh_parallel(id){
+		var paths=d3.select("#parallel").selectAll("path").filter(function(){
+			return this.getAttribute("stroke") == "red";
+		}).attr("stroke", function(d){
+			return color(d.target);
+		})
+		.attr("stroke-width", 1);
+		//for (i=0; i<paths["_groups"][0].lenght; i++){
+		//	paths["_groups"][0][i].attr("stroke", color(paths["_groups"][0][i].getAttribute("target")));
+		//}
+		d3.select("#parallel").selectAll("path").filter(function(){
+			return this.getAttribute("identifier") == id;
+		}).attr("stroke", "red").attr("stroke-width", 5);
+	}
+
+
 	function highlight_points(id,y) {
 
 		d3.select("#line_chart").selectAll("g").filter(function() {
@@ -1117,6 +1140,7 @@
 					points["_groups"][0][i].setAttribute("r","2");
 				}
 				draw_line(d);
+				highligh_parallel(this.getAttribute("identifier"))
 				if (this.getAttribute("clicked") == "false"){
 
 					this.setAttribute("clicked", "true");
