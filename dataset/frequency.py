@@ -17,7 +17,10 @@ frequency_of=["SEX", "EDUCATION", "MARRIAGE", "AGE"]
 
 for elem in frequency_of:
     table=pd.crosstab(index=data[elem], columns=data["default payment next month"], normalize="index")
-    table.columns=["0", "1"]
+    table.columns=["1", "0"]
+    table=table.rename(index=str, columns={"0": "2"})
+    table=table.rename(index=str, columns={"1": "0"})
+    table=table.rename(index=str, columns={"2": "1"})
     #table["total"]=table["0"]+table["1"]
     #table=table.transpose()
     table.to_csv(elem+"_frequency.csv")
