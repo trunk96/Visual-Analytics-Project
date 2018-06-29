@@ -413,6 +413,7 @@
 				})
 				.on('click', function() {
 					highlight_points(this.getAttribute("id"),this.getAttribute("y"))
+					highlight_parallel(this.getAttribute("id"))
 					})
 
 			g.append("text")
@@ -928,8 +929,22 @@
 		}).attr("fill","red")
 	}
 
+	function highlight_parallel_by_id(id){
+		var paths=d3.select("#parallel").selectAll("path").filter(function(){
+			return this.getAttribute("stroke") == "red";
+		}).attr("stroke", function(d){
+			return color(d.target);
+		})
+		.attr("stroke-width", 1);
 
-	function highligh_parallel(id){
+
+		d3.select("#parallel").selectAll("path")
+			.filter(function(d) {return this.getAttribute("identifier") == id})
+			.attr("stroke","red")
+			.attr("stroke-width", "5");
+	}
+
+	function highlight_parallel(id){
 		var paths=d3.select("#parallel").selectAll("path").filter(function(){
 			return this.getAttribute("stroke") == "red";
 		}).attr("stroke", function(d){
@@ -939,10 +954,20 @@
 		//for (i=0; i<paths["_groups"][0].lenght; i++){
 		//	paths["_groups"][0][i].attr("stroke", color(paths["_groups"][0][i].getAttribute("target")));
 		//}
-		d3.select("#parallel").selectAll("path").filter(function(){
-			return this.getAttribute("identifier") == id;
-		}).attr("stroke", "red").attr("stroke-width", 5);
-	}
+
+		d3.csv("pca.csv", function(rows) {
+			rows_array = rows.filter(function(d) {
+				return d[id.split("_")[0]] == id.split("_")[1]
+			});
+			for (i=0;i<rows_array.length;i++) {
+				id_point = rows_array[i]["ID"]
+				d3.select("#parallel").selectAll("path")
+					.filter(function(d) {return this.getAttribute("identifier") == id_point})
+					.attr("stroke","red")
+					.attr("stroke-width", "5");
+			}
+	});
+}
 
 
 	function highlight_points(id,y) {
@@ -1140,7 +1165,7 @@
 					points["_groups"][0][i].setAttribute("r","2");
 				}
 				draw_line(d);
-				highligh_parallel(this.getAttribute("identifier"))
+				highlight_parallel_by_id(this.getAttribute("identifier"))
 				if (this.getAttribute("clicked") == "false"){
 
 					this.setAttribute("clicked", "true");
