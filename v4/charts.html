@@ -924,6 +924,14 @@
 	
 	function highlight_points(id,y) {
 		
+		d3.select("#line_chart").selectAll("g").filter(function() {
+				return this.getAttribute("id") != "line_chart" && 
+					this.getAttribute("class") != "xaxis" &&
+					this.getAttribute("class") != "yaxis" &&
+					this.getAttribute("class") != "tick" &&
+					this.getAttribute("class") != "domain"
+			}).remove()
+			
 		var types = ["AGE","SEX","MARRIAGE","EDUCATION"]
 		for (i=0;i<4;i++) {
 			var bar = d3.selectAll("#"+types[i]).selectAll("rect").filter(function() {
