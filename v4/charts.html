@@ -176,6 +176,33 @@
 							})
 							.attr("target", function(d){
 								return d.target;
+							})
+							.on("click", function(d){
+								d3.select("#parallel").selectAll("path").filter(function(){
+									return this.getAttribute("stroke") == "red";
+								}).attr("stroke", color(this.getAttribute("target"))).attr("stroke-width", 1);
+
+								this.setAttribute("stroke", "red");
+								this.setAttribute("stroke-width", 5);
+
+								var id=this.getAttribute("identifier")
+
+								var points=d3.select("#scatterplot").selectAll("circle").filter(function(){
+									return this.getAttribute("fill") == "red";
+								});
+								for (i=0;i<points["_groups"][0].length;i++) {
+									points["_groups"][0][i].setAttribute("fill",color(points["_groups"][0][i].getAttribute("target")));
+									points["_groups"][0][i].setAttribute("r", 2);
+								}
+
+								draw_line(d);
+								var new_point=d3.select("#scatterplot").selectAll("circle").filter(function(){
+									return this.getAttribute("identifier") == id;
+								});
+								for (i=0;i<new_point["_groups"][0].length;i++) {
+									new_point["_groups"][0][i].setAttribute("fill","red");
+									new_point["_groups"][0][i].setAttribute("r", 5);
+								}
 							});
 
 				// Add a group element for each dimension.
