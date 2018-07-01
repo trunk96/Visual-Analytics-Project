@@ -1,0 +1,1285 @@
+<!DOCTYPE html>
+<html>
+
+<!-- Mirrored from mbostock.github.com/d3/ex/choropleth.html by HTTrack Website Copier/3.x [XR&CO'2010], Sat, 04 Feb 2012 16:43:26 GMT -->
+
+<head>
+	<meta http-equiv="content-type" content="text/html;charset=utf-8">
+	<title>Loading data</title>
+	<script type="text/javascript" src="d3.v4.js"></script>
+	<style type="text/css">
+		div.tooltip {
+			position: absolute;
+			text-align: center;
+			width: 60px;
+			height: 28px;
+			padding: 2px;
+			font: 12px sans-serif;
+			background: lightblue;
+			border: 0px;
+			border-radius: 8px;
+			pointer-events: none;
+		}
+		body{
+			background-color: white;
+		}
+		.selected{
+			opacity: 1;
+		}
+		.unselected{
+			opacity: 0.1;
+		}
+		.yaxis line{
+  		stroke: black;
+		}
+
+		.yaxis path{
+  		stroke: black;
+		}
+		.xaxis line{
+  		stroke: black;
+		}
+
+		.xaxis path{
+  		stroke: black;
+		}
+
+		.xaxis text{
+		  fill: black;
+		}
+		.yaxis text{
+			fill: black;
+		}
+
+		.background path {
+		  fill: none;
+		  shape-rendering: crispEdges;
+		}
+
+		.foreground path {
+		  fill: none;
+
+		}
+		.axis line,
+		.axis path {
+		  fill: none;
+		  stroke: #000;
+		  shape-rendering: crispEdges;
+		}
+
+		.axis text {
+		  text-shadow: 0 1px 0 #fff, 1px 0 0 #fff, 0 -1px 0 #fff, -1px 0 0 #fff;
+		  cursor: move;
+		}
+	</style>
+</head>
+
+<body>
+	<div align="center">
+		<h1>Default Credit Card</h1>
+	</div>
+	<div id='chart' align="center">
+		<svg id="parallel"></svg>
+		<svg id="scatterplot"></svg>
+		<svg id="linechart"></svg>
+
+	</div>
+	<div id="stackbarcharts">
+
+	</div>
+</body>
+
+<script type="text/javascript">
+	var height=400;
+	var width=550;
+	var color = d3.scaleOrdinal(d3.schemeCategory10);
+
+	var div = d3.select("body").append("div")
+		.attr("class", "tooltip")
+		.style("opacity", 0);
+
+	var time_scale;
+	var amount_scale;
+	var max_value;
+	var min_value;
+
+	var data = [];
+
+	d3.csv("standardized_data.csv", function(rows) {
+		max_value  = d3.max(rows, function(d){
+			return Math.max.apply(Math, [+d.BILL_AMT1, +d.BILL_AMT2, +d.BILL_AMT3, +d.BILL_AMT4, +d.BILL_AMT5, +d.BILL_AMT6, +d.PAY_AMT1, +d.PAY_AMT2, +d.PAY_AMT3, +d.PAY_AMT4, +d.PAY_AMT5, +d.PAY_AMT6]);
+		})
+
+		min_value = d3.min(rows, function(d){
+			return Math.min.apply(Math, [+d.BILL_AMT1, +d.BILL_AMT2, +d.BILL_AMT3, +d.BILL_AMT4, +d.BILL_AMT5, +d.BILL_AMT6, +d.PAY_AMT1, +d.PAY_AMT2, +d.PAY_AMT3, +d.PAY_AMT4, +d.PAY_AMT5, +d.PAY_AMT6]);
+		})
+
+		draw_scatterplot(rows);
+		draw_stackbarchart("AGE");
+		draw_stackbarchart("SEX");
+		draw_stackbarchart("MARRIAGE");
+		draw_stackbarchart("EDUCATION");
+		draw_parallel();
+	});
+
+	function draw_parallel(){
+		var margin = {top: 30, right: 30, bottom: 60, left: 10},
+			width = 550 - margin.left - margin.right,
+			height = 400 - margin.top - margin.bottom;
+
+		var x = d3.scalePoint().range([0, width]).padding(1);
+			y = {},
+			dragging = {};
+
+		var line = d3.line(),
+			axis = d3.axisLeft(),
+			background,
+			foreground;
+
+		var svg = d3.select("#parallel")
+			.attr("width", width + margin.left + margin.right)
+			.attr("height", height + margin.top + margin.bottom)
+			.append("g")
+				.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+		d3.csv("pca.csv", function(d, i){
+				if (i>-1) return d;
+			}, function(error, rows) {
+
+				// Extract the list of dimensions and create a scale for each.
+				x.domain(dimensions = d3.keys(rows[0]).filter(function(d) {
+					return (d == "X1" || d == "X2" || d == "X3" || d == "X4" || d == "X5" || d == "X6") && (y[d] = d3.scaleLinear()
+						.domain(d3.extent(rows, function(p) { return +p[d]; }))
+						.range([height, 0]));
+				}));
+				rows=rows.sort(function(a,b){ return d3.ascending(a.target, b.target);});
+				// Add grey background lines for context.
+				background = svg.append("g")
+					.attr("class", "background")
+					.selectAll("path")
+						.data(rows)
+						.enter().append("path")
+							.attr("d", path);
+
+				// Add blue foreground lines for focus.
+				foreground = svg.append("g")
+					.attr("class", "foreground")
+					.selectAll("path")
+						.data(rows)
+						.enter().append("path")
+							.attr("d", path)
+							.attr("stroke", function(d){
+								return color(d.target);
+							})
+							.attr("identifier", function(d){
+								return d.ID;
+							})
+							.attr("target", function(d){
+								return d.target;
+							})
+							.on("click", function(d){
+								d3.select("#parallel").selectAll("path").filter(function(){
+									return this.getAttribute("stroke") == "red";
+								}).attr("stroke", color(this.getAttribute("target"))).attr("stroke-width", 1);
+
+								this.setAttribute("stroke", "red");
+								this.setAttribute("stroke-width", 5);
+
+								var id=this.getAttribute("identifier")
+
+								var points=d3.select("#scatterplot").selectAll("circle").filter(function(){
+									return this.getAttribute("fill") == "red";
+								});
+								for (i=0;i<points["_groups"][0].length;i++) {
+									points["_groups"][0][i].setAttribute("fill",color(points["_groups"][0][i].getAttribute("target")));
+									points["_groups"][0][i].setAttribute("r", 2);
+								}
+
+								draw_line(d);
+								var new_point=d3.select("#scatterplot").selectAll("circle").filter(function(){
+									return this.getAttribute("identifier") == id;
+								});
+								for (i=0;i<new_point["_groups"][0].length;i++) {
+									new_point["_groups"][0][i].setAttribute("fill","red");
+									new_point["_groups"][0][i].setAttribute("r", 5);
+								}
+							});
+
+				// Add a group element for each dimension.
+				var g = svg.selectAll(".dimension")
+					.data(dimensions)
+					.enter().append("g")
+						.attr("class", "dimension")
+						.attr("transform", function(d) { return "translate(" + x(d) + ")"; })
+						.call(d3.drag()
+						.on("start", function(d) {
+							dragging[d] = x(d);
+							background.attr("visibility", "hidden");
+						})
+						.on("drag", function(d) {
+							dragging[d] = Math.min(width, Math.max(0, d3.event.x));
+							foreground.attr("d", path);
+							dimensions.sort(function(a, b) { return position(a) - position(b); });
+							x.domain(dimensions);
+							g.attr("transform", function(d) { return "translate(" + position(d) + ")"; })
+						})
+						.on("end", function(d) {
+							delete dragging[d];
+							transition(d3.select(this)).attr("transform", "translate(" + x(d) + ")");
+							transition(foreground).attr("d", path);
+							background
+								.attr("d", path)
+								.transition()
+								.delay(500)
+								.duration(0)
+								.attr("visibility", null);
+						}));
+
+				// Add an axis and title.
+				g.append("g")
+					.attr("class", "axis")
+					.each(function(d) { d3.select(this).call(axis.scale(y[d])); })
+						.append("text")
+							.style("text-anchor", "middle")
+							.attr("y", -9)
+							.text(function(d) { return d; });
+				});
+
+		function position(d) {
+			var v = dragging[d];
+			return v == null ? x(d) : v;
+		}
+
+		function transition(g) {
+			return g.transition().duration(500);
+		}
+
+		// Returns the path for a given data point.
+		function path(d) {
+			return line(dimensions.map(function(p) { return [position(p), y[p](d[p])]; }));
+		}
+	}
+
+	function draw_stackbarchart(t){
+
+		var type=t;
+		var values,labels;
+		var sort_age=false;
+		var svg=d3.select("#stackbarcharts")
+							.append("div").attr("id", "div-"+type)
+							.append("svg").attr("id", type);
+		if (t=="AGE"){
+			svg.attr("width", 960).attr("height", 250).style("float", "left")
+			svg.append("rect")
+				.attr("id","is_sorting_rect")
+				.attr("x", 750)
+				.attr("y", 220)
+				.attr("width", 19)
+				.attr("height", 19)
+				.attr("fill", "grey")
+				.on("click", function() {
+					sort_age=true;
+					d3.csv("AGE_frequency.csv", age_sorting)
+				})
+
+
+		    svg.append("text")
+				.attr("x", 780)
+				.attr("y", 235)
+				.text("Sort by default probability")
+		}
+		else if (t=="SEX"){
+			svg.attr("width", 250).attr("height", 250).style("float", "left")
+			values = ["1","2"]
+			labels = ["male","female"]
+		}
+		else if (t=="MARRIAGE"){
+			svg.attr("width", 300).attr("height", 250).style("float", "left")
+			values = ["0","1","2","3"]
+			labels = ["unknown","married","single","others"]
+		}
+		else{
+			svg.attr("width", 300).attr("height", 250).style("float", "left")
+			values = ["0","1","2","3","4","5","6"]
+			labels = ["unknown","graduate_school","university","high_school","others","unknown","unknown"]
+		}
+		var margin = {top: 20, right: 20, bottom: 80, left: 40},
+		    width = +svg.attr("width") - margin.left - margin.right,
+		    height = +svg.attr("height") - margin.top - margin.bottom,
+		    g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+		var x = d3.scaleBand()
+		    .rangeRound([0, width-100])
+		    .paddingInner(0.05)
+		    .align(0.1);
+
+		var y = d3.scaleLinear()
+		    .rangeRound([height, 0])
+
+		var z = d3.scaleOrdinal(d3.schemeCategory10);
+
+		d3.csv(type+"_frequency.csv", compute_total, draw_stack);
+
+		function age_sorting(data) {
+			var prev_height=d3.select("#"+type).attr("height");
+			var prev_width=d3.select("#"+type).attr("width");
+			d3.select("#"+type).remove()
+			var svg=d3.select("#div-"+type)
+				.append("svg")
+				.attr("width", prev_width)
+				.attr("height", prev_height)
+				.attr("id", type)
+				.style("float", "left");
+			g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+			if (sort_age == true) {
+				g.append("rect")
+					.attr("id","is_sorting_rect")
+					.attr("x", 710)
+					.attr("y", 200)
+					.attr("width", 19)
+					.attr("height", 19)
+					.attr("fill", "grey")
+					.on("click", function() {
+						sort_age = false
+						d3.csv("AGE_frequency.csv", age_sorting)
+					})
+
+				g.append("text")
+					.attr("x", 740)
+					.attr("y", 215)
+					.text("Sort by age")
+			}
+
+			else {
+				g.append("rect")
+					.attr("id","is_sorting_rect")
+					.attr("x", 710)
+					.attr("y", 200)
+					.attr("width", 19)
+					.attr("height", 19)
+					.attr("fill", "grey")
+					.on("click", function() {
+						sort_age=true;
+						d3.csv("AGE_frequency.csv", age_sorting)
+				})
+
+				g.append("text")
+					.attr("x", 740)
+					.attr("y", 215)
+					.text("Sort by default probability")
+			}
+
+			d3.csv("AGE_frequency.csv", compute_total, draw_stack);
+		}
+
+		function draw_stack (error, data) {
+			//if (error) throw error;
+
+			var keys = data.columns.slice(1);
+
+			if (type=="SEX" || type=="MARRIAGE" || type=="EDUCATION" || sort_age == true){
+				data.sort(function(a, b) { return b ['1'] - a['1']; });
+			}
+
+			x.domain(data.map(function(d) { return d[type]; }));
+			y.domain([0, d3.max(data, function(d) { return d.total; })]).nice();
+			z.domain(keys);
+
+			g.append("g")
+				.selectAll("g")
+				.data(d3.stack().keys(keys).order(d3.stackOrderReverse)(data))
+				.enter().append("g")
+					.attr("id", "g-"+type)
+					.attr("fill", function(d) { return z(d.key); })
+				.selectAll("rect")
+					.data(function(d) { return d; })
+					.enter().append("rect")
+						.attr("id", function(d) {
+							return type+"_"+d.data[type]
+						})
+						.attr("x", function(d) { return x(d.data[type]); })
+						.attr("y", function(d) { return y(d[1]); })
+						.attr("height", function(d) { return y(d[0]) - y(d[1]); })
+						.attr("width", x.bandwidth())
+
+			g.selectAll("rect").filter(function() {
+					return this.getAttribute("id") != "is_sorting_rect"
+				})
+				.on('mouseover', function(d){
+					d3.select(".text_"+d.data[type]+this.getAttribute("y")).remove()
+					var y = parseInt(this.getAttribute("y")), height = parseInt(this.getAttribute("height")/2)
+					d3.select("#g-"+type)
+						.append('text')
+							.attr('x', (parseInt(this.getAttribute("x")) + parseInt(this.getAttribute("width")/2)))
+							.attr('y', function() {
+								if (y == 0)
+									return (height)
+								return y
+							})
+							.attr('fill',"black")
+							.attr('class', "text_"+d.data[type]+this.getAttribute("y"))
+					get_num_instances(type,d.data[type],this.getAttribute("y"))
+				})
+
+			g.selectAll("rect").filter(function() {
+					return this.getAttribute("id") != "is_sorting_rect"
+				})
+				.on('mouseout', function(d){
+					d3.select(".text_"+d.data[type]+this.getAttribute("y"))
+						.transition()
+						.duration(500)
+						.style('opacity',0)
+						.attr('transform','translate(10, -10)')
+						.remove()
+				})
+
+
+			g.selectAll("rect").filter(function() {
+					return this.getAttribute("id") != "is_sorting_rect"
+				})
+				.on('click', function() {
+					highlight_points(this.getAttribute("id"),this.getAttribute("y"))
+					highlight_parallel(this.getAttribute("id"))
+					})
+
+			g.append("text")
+				.attr("transform",
+							"translate(" + (width/2) + " ," +
+														 (height + margin.top + 50) + ")")
+				.style("text-anchor", "middle")
+				.text(type);
+
+			var x_axis;
+			if (type != "AGE") {
+				x_axis = d3.axisBottom(x)
+					.tickValues(values)
+					.tickFormat(function(d,i){ return labels[i] });
+
+				g.append("g")
+					.attr("class", "axis")
+					.attr("transform", "translate(0," + height + ")")
+					.call(x_axis)
+					.selectAll("text")
+						.style("text-anchor", "end")
+						.attr("dx", "-.8em")
+						.attr("dy", ".15em")
+						.attr("transform", "rotate(-65)");
+			}
+			else {
+				x_axis = d3.axisBottom(x);
+				g.append("g")
+					.attr("class", "axis")
+					.attr("transform", "translate(0," + height + ")")
+					.call(x_axis)
+			  }
+
+			g.append("g")
+				.attr("class", "axis")
+				//.call(d3.axisLeft(y).ticks(null, "s"))
+				.call(d3.axisLeft(y).ticks(5))
+				.append("text")
+					.attr("x", 2)
+					.attr("y", y(y.ticks().pop()) + 0.5)
+					.attr("dy", "-1.0em")
+					.attr("fill", "#000")
+					.attr("font-weight", "bold")
+					.attr("text-anchor", "middle")
+					.text("percentage")
+
+			var legend = g.append("g")
+				.attr("font-family", "sans-serif")
+				.attr("font-size", 10)
+				.attr("text-anchor", "start")
+				.selectAll("g")
+					.data(keys.slice().reverse())
+					.enter().append("g")
+						.attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; })
+							.attr("class", "legend-"+type)
+							.attr("classification", function(d){
+								return d;
+							})
+							.on("click", to_barchart);
+
+			legend.append("rect")
+				.attr("x", width - 45)
+				.attr("width", 19)
+				.attr("height", 19)
+				.attr("fill", z)
+
+			legend.append("text")
+				.attr("x", width -19)
+				.attr("y", 9.5)
+				.attr("dy", "0.32em")
+				.text(function(d) {
+					if (d==0){
+						return "Correct";
+					}
+					else{
+						return "Default";
+					}
+				});
+		}
+
+		function to_barchart(sel_legend){
+			var selected_legend
+			if (sel_legend != 0 && sel_legend != 1)
+				selected_legend = sel_legend
+			else
+				selected_legend= this
+			d3.selectAll(".legend-"+type).attr("opacity", "0.4");
+			d3.select(selected_legend).attr("opacity", "1");
+			d3.csv(type+"_frequency.csv",
+				function(d, i, columns){
+					//console.log(d);
+					if (d3.select(selected_legend).attr("classification")=="0"){
+						var t = d[0] = +d[[0]];
+						d.total = t;
+						//console.log(d.total)
+					}
+					else{
+						var t = d[1] = +d[1];
+						d.total = t;
+						//console.log(d.total)
+					}
+				return d;
+
+				},
+				function(data) {
+					//console.log(selected_legend)
+					//d3.select("svg").selectAll("b").selectAll("rect").exit().transition().duration(500).attr("height", 0);
+					var prev_height=d3.select("#"+type).attr("height");
+					var prev_width=d3.select("#"+type).attr("width");
+					d3.select("#"+type).remove()
+
+					var svg=d3.select("#div-"+type)
+						.append("svg")
+						.attr("width", prev_width)
+						.attr("height", prev_height)
+						.attr("id", type)
+						.style("float", "left");
+
+					g = svg.append("g")
+						.attr("id","g-"+type)
+						.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+					if (type == "AGE") {
+						if (sort_age == true) {
+							g.append("rect")
+								.attr("id","is_sorting_rect")
+								.attr("x", 710)
+								.attr("y", 200)
+								.attr("width", 19)
+								.attr("height", 19)
+								.attr("fill", "grey")
+								.on("click", function() {
+									sort_age = false
+									to_barchart(selected_legend);
+								})
+
+							g.append("text")
+								.attr("x", 740)
+								.attr("y", 215)
+								.text("Sort by age")
+						}
+
+						else {
+							g.append("rect")
+								.attr("id","is_sorting_rect")
+								.attr("x", 710)
+								.attr("y", 200)
+								.attr("width", 19)
+								.attr("height", 19)
+								.attr("fill", "grey")
+								.on("click", function() {
+									sort_age=true;
+									to_barchart(selected_legend);
+								})
+
+							g.append("text")
+								.attr("x", 740)
+								.attr("y", 215)
+								.text("Sort by default probability")
+						}
+					}
+
+					var x = d3.scaleBand()
+						.rangeRound([0, width-100])
+						.paddingInner(0.05)
+						.align(0.1);
+
+					var y = d3.scaleLinear()
+						.rangeRound([height, 50]);
+
+					var z=d3.scaleOrdinal(d3.schemeCategory10)
+
+					if (type=="SEX" || type=="MARRIAGE" || type=="EDUCATION" || sort_age == true){
+						data.sort(function(a, b) { return b ['1'] - a['1']; });
+					}
+
+					x.domain(data.map(function(d) { return d[type]; }));
+					y.domain([0, d3.max(data, function(d) {
+						//console.log(d.total)
+						return d.total; })]).nice();
+						//console.log(y.domain())
+					z.domain(["0", "1"])
+
+					var keys = data.columns.slice(1);
+
+					// append the rectangles for the bar chart
+					g.append("g")
+						.selectAll("g")
+						.data(data)
+						.enter().append("rect")
+							.attr("id", function(d) {
+								return type+"_"+d[type]
+							})
+							.attr("x", function(d) { return x(d[type]); })
+							.attr("width", x.bandwidth())
+							.attr("y", function(d) { return y(d[d3.select(selected_legend).attr("classification")]); })
+							.transition()
+								.duration(750)
+						.attr("height", function(d) {
+							//console.log(height);
+							return height - y(d[d3.select(selected_legend).attr("classification")]);
+						})
+						.attr("fill", z(d3.select(selected_legend).attr("classification")));
+
+					g.selectAll("rect").filter(function() {
+							return this.getAttribute("id") != "is_sorting_rect"
+						})
+						.on('mouseover', function(d){
+							d3.select(".text_"+d[type]+selected_legend.getAttribute("classification")).remove()
+							var y = parseInt(this.getAttribute("y")), height = parseInt(this.getAttribute("height")/2)
+							d3.select("#g-"+type)
+								.append('text')
+									.attr('x', (parseInt(this.getAttribute("x")) + parseInt(this.getAttribute("width")/2)))
+									.attr('y', function() {
+										if (y == 0)
+											return (height)
+										return y
+									})
+									.attr('fill',"black")
+									.attr('class', "text_"+d[type]+selected_legend.getAttribute("classification"))
+							get_num_instances(type,d[type],selected_legend.getAttribute("classification"))
+						})
+
+					g.selectAll("rect").filter(function() {
+							return this.getAttribute("id") != "is_sorting_rect"
+						})
+						.on('mouseout', function(d){
+							d3.select(".text_"+d[type]+selected_legend.getAttribute("classification"))
+								.transition()
+								.duration(500)
+								.style('opacity',0)
+								.attr('transform','translate(10, -10)')
+								.remove()
+						})
+
+					g.append("text")
+						.attr("transform",
+								"translate(" + (width/2) + " ," +
+										(height + margin.top + 50) + ")")
+						.style("text-anchor", "middle")
+						.text(type);
+
+					// add the x Axis
+					var x_axis;
+					if (type != "AGE") {
+						x_axis = d3.axisBottom(x)
+							.tickValues(values)
+							.tickFormat(function(d,i){ return labels[i] });
+
+						g.append("g")
+							.attr("class", "axis")
+							.attr("transform", "translate(0," + height + ")")
+							.call(x_axis)
+							.selectAll("text")
+								.style("text-anchor", "end")
+								.attr("dx", "-.8em")
+								.attr("dy", ".15em")
+								.attr("transform", "rotate(-65)");
+					}
+					else {
+						x_axis = d3.axisBottom(x);
+						g.append("g")
+							.attr("class", "axis")
+							.attr("transform", "translate(0," + height + ")")
+							.call(x_axis)
+					}
+
+					g.append("g")
+						.attr("class", "axis")
+						.call(d3.axisLeft(y).ticks(5))
+						.append("text")
+							.attr("x", 2)
+							.attr("y", y(y.ticks().pop()) + 0.5)
+							.attr("dy", "-1.0em")
+							.attr("fill", "#000")
+							.attr("font-weight", "bold")
+							.attr("text-anchor", "start")
+							.text("percentage");
+
+					var legend = g.append("g")
+						.attr("font-family", "sans-serif")
+						.attr("font-size", 10)
+						.attr("text-anchor", "start")
+						.selectAll("g")
+							.data(keys.slice().reverse())
+							.enter().append("g")
+							.attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; })
+							.attr("class", "legend-"+type)
+							.attr("classification", function(d){
+								return d;
+							})
+							.attr("opacity", function(d){
+								if(d==d3.select(selected_legend).attr("classification")){
+									return "1";
+								}
+								else{
+									return "0.4"
+								}
+							})
+						.on("click", to_barchart);
+
+					legend.append("rect")
+						.attr("x", width - 45)
+						.attr("width", 19)
+						.attr("height", 19)
+						.attr("fill", z)
+
+					legend.append("text")
+						.attr("x", width -19)
+						.attr("y", 9.5)
+						.attr("dy", "0.32em")
+						.text(function(d) {
+							if (d==0){
+								return "Correct";
+							}
+							else{
+								return "Default";
+							}
+						});
+				}
+			);
+		}
+
+	}
+
+	function compute_total (d, i, columns) {
+		for (i = 1, t = 0; i < columns.length; ++i) t += d[columns[i]] = +d[columns[i]];
+		d.total = t;
+		return d;
+	}
+
+	function draw_line(d) {
+
+		d3.select("#line_chart").selectAll("g").filter(function() {
+				return this.getAttribute("id") != "line_chart" &&
+					this.getAttribute("class") != "xaxis" &&
+					this.getAttribute("class") != "yaxis" &&
+					this.getAttribute("class") != "tick" &&
+					this.getAttribute("class") != "domain"
+			}).remove()
+
+		var types = ["AGE","SEX","MARRIAGE","EDUCATION"]
+		for (i=0;i<4;i++) {
+			var bar = d3.selectAll("#"+types[i]).selectAll("rect").filter(function() {
+				return this.getAttribute("fill") == "red"
+			})
+			if(bar != null)
+				bar.attr("fill",null)
+		}
+
+		var points = d3.select("#scatterplot").selectAll("circle").filter(function() {
+			return this.getAttribute("fill") == "red"
+		})
+		for (i=0;i<points["_groups"][0].length;i++) {
+			points["_groups"][0][i].setAttribute("fill",color(points["_groups"][0][i].getAttribute("target")))
+		}
+
+		var key = d.ID
+
+		var bill_values = [
+			{x_axis: 100, y_axis: d.BILL_AMT1},
+			{x_axis: 200, y_axis: d.BILL_AMT2},
+			{x_axis: 300, y_axis: d.BILL_AMT3},
+			{x_axis: 400, y_axis: d.BILL_AMT4},
+			{x_axis: 500, y_axis: d.BILL_AMT5},
+			{x_axis: 600, y_axis: d.BILL_AMT6},
+		];
+
+		var line_bill = d3.line()
+			.x(function(d) { return time_scale(d.x_axis); })
+			.y(function(d) { return amount_scale(d.y_axis); })
+
+
+		var g = d3.select("#line_chart")
+				.append('g')
+				.attr('id', key)
+
+		g.append("text")
+			.attr('x', 15)
+			.attr('y', 350)
+			.text("ID: "+key)
+
+		g.append("path")
+			.attr("d", line_bill(bill_values))
+			.attr("stroke", color(2))
+			.attr("stroke-width", 3)
+			.attr("fill", "none");
+
+		g.selectAll('circle')
+            .data(bill_values)
+            .enter()
+            .append("circle")
+            .attr('cx', function(d) {return time_scale(d.x_axis)})
+            .attr('cy', function(d) {return amount_scale(d.y_axis)})
+            .attr('r',5)
+            .attr("stroke", color(2))
+			.attr("stroke-width", 3);
+
+		var pay_values = [
+			{x_axis: 100, y_axis: d.PAY_AMT1},
+			{x_axis: 200, y_axis: d.PAY_AMT2},
+			{x_axis: 300, y_axis: d.PAY_AMT3},
+			{x_axis: 400, y_axis: d.PAY_AMT4},
+			{x_axis: 500, y_axis: d.PAY_AMT5},
+			{x_axis: 600, y_axis: d.PAY_AMT6},
+		];
+
+		var line_pay = d3.line()
+			.x(function(d) { return time_scale(d.x_axis); })
+			.y(function(d) { return amount_scale(d.y_axis); })
+
+
+		var p = d3.select("#line_chart")
+				.append('g')
+				.attr('id', key)
+
+		p.append("path")
+			.attr("d", line_pay(pay_values))
+			.attr("stroke", color(3))
+			.attr("stroke-width", 3)
+			.attr("fill", "none");
+
+		p.selectAll('circle')
+            .data(pay_values)
+            .enter()
+            .append("circle")
+            .attr('cx', function(d) {return time_scale(d.x_axis)})
+            .attr('cy', function(d) {return amount_scale(d.y_axis)})
+            .attr('r',5)
+            .attr("stroke", color(3))
+			.attr("stroke-width", 3);
+
+		var enter_duration = 1000;
+
+        g.selectAll('circle')
+            .on('mouseover', function(d){
+                d3.select(this)
+                    .transition().attr('r', 9)
+            })
+            .on('mouseout', function(d,i){
+                if (i !== data.length-1) {
+                    d3.select(this).transition().attr('r', 5)
+                }
+            })
+
+        g.selectAll('circle')
+            .on('mouseover.a', function(d){
+				d3.select(".text_" + key).remove()
+                d3.select('#line_chart')
+                    .append('text')
+                    .attr('x', time_scale(d.x_axis) + 10)
+                    .attr('y', amount_scale(d.y_axis) - 10)
+                    .attr('class', "text_"+key)
+                resolve_value(key,"BILL_AMT"+(d.x_axis/100))
+            })
+            .on('mouseout.a', function(d){
+                d3.select(".text_" + key)
+                    .transition()
+                    .duration(500)
+                    .style('opacity',0)
+                    .attr('transform','translate(10, -10)')
+                    .remove()
+            })
+
+        p.selectAll('circle')
+            .on('mouseover', function(d){
+                d3.select(this)
+                    .transition().attr('r', 9)
+            })
+            .on('mouseout', function(d,i){
+                if (i !== data.length-1) {
+                    d3.select(this).transition().attr('r', 5)
+                }
+            })
+
+        p.selectAll('circle')
+            .on('mouseover.a', function(d){
+				d3.select(".text_" + key).remove()
+                d3.select('#line_chart')
+                    .append('text')
+                    .attr('x', time_scale(d.x_axis) + 10)
+                    .attr('y', amount_scale(d.y_axis) - 10)
+                    .attr('class', "text_"+key)
+                resolve_value(key,"PAY_AMT"+(d.x_axis/100))
+            })
+            .on('mouseout.a', function(d){
+                d3.select(".text_" + key)
+                    .transition()
+                    .duration(500)
+                    .style('opacity',0)
+                    .attr('transform','translate(10, -10)')
+                    .remove()
+            })
+
+		highlight_bars(d.AGE,d.SEX,d.MARRIAGE,d.EDUCATION,d.target)
+	}
+
+	function highlight_bars(age,sex,marriage,education,classification) {
+		d3.selectAll("#AGE_"+age).filter(function() {
+			return this.parentNode.getAttribute("fill") == color(classification)
+		}).attr("fill","red")
+
+		d3.selectAll("#SEX_"+sex).filter(function() {
+			return this.parentNode.getAttribute("fill") == color(classification)
+		}).attr("fill","red")
+
+		d3.selectAll("#MARRIAGE_"+marriage).filter(function() {
+			return this.parentNode.getAttribute("fill") == color(classification)
+		}).attr("fill","red")
+
+		d3.selectAll("#EDUCATION_"+education).filter(function() {
+			return this.parentNode.getAttribute("fill") == color(classification)
+		}).attr("fill","red")
+	}
+
+	function highlight_parallel_by_id(id){
+		var paths=d3.select("#parallel").selectAll("path").filter(function(){
+			return this.getAttribute("stroke") == "red";
+		}).attr("stroke", function(d){
+			return color(d.target);
+		})
+		.attr("stroke-width", 1);
+
+
+		d3.select("#parallel").selectAll("path")
+			.filter(function(d) {return this.getAttribute("identifier") == id})
+			.attr("stroke","red")
+			.attr("stroke-width", "5");
+	}
+
+	function highlight_parallel(id){
+		var paths=d3.select("#parallel").selectAll("path").filter(function(){
+			return this.getAttribute("stroke") == "red";
+		}).attr("stroke", function(d){
+			return color(d.target);
+		})
+		.attr("stroke-width", 1);
+		//for (i=0; i<paths["_groups"][0].lenght; i++){
+		//	paths["_groups"][0][i].attr("stroke", color(paths["_groups"][0][i].getAttribute("target")));
+		//}
+
+		d3.csv("pca.csv", function(rows) {
+			rows_array = rows.filter(function(d) {
+				return d[id.split("_")[0]] == id.split("_")[1]
+			});
+			for (i=0;i<rows_array.length;i++) {
+				id_point = rows_array[i]["ID"]
+				d3.select("#parallel").selectAll("path")
+					.filter(function(d) {return this.getAttribute("identifier") == id_point})
+					.attr("stroke","red")
+					.attr("stroke-width", "5");
+			}
+	});
+}
+
+
+	function highlight_points(id,y) {
+
+		d3.select("#line_chart").selectAll("g").filter(function() {
+				return this.getAttribute("id") != "line_chart" &&
+					this.getAttribute("class") != "xaxis" &&
+					this.getAttribute("class") != "yaxis" &&
+					this.getAttribute("class") != "tick" &&
+					this.getAttribute("class") != "domain"
+			}).remove()
+
+		var types = ["AGE","SEX","MARRIAGE","EDUCATION"]
+		for (i=0;i<4;i++) {
+			var bar = d3.selectAll("#"+types[i]).selectAll("rect").filter(function() {
+				return this.getAttribute("fill") == "red"
+			})
+			if(bar != null)
+				bar.attr("fill",null)
+		}
+
+		var points = d3.select("#scatterplot").selectAll("circle").filter(function() {
+			return this.getAttribute("fill") == "red"
+		})
+		for (i=0;i<points["_groups"][0].length;i++) {
+			points["_groups"][0][i].setAttribute("fill",color(points["_groups"][0][i].getAttribute("target")))
+			points["_groups"][0][i].setAttribute("r","2")
+		}
+
+		var rows_array = []
+		var classification
+		if (y==0) classification = 0
+		else classification = 1
+
+		d3.selectAll("#"+id).filter(function() {
+			return this.parentNode.getAttribute("fill") == color(classification)
+		}).attr("fill","red")
+
+		d3.csv("pca.csv", function(rows) {
+			rows_array = rows.filter(function(d) {
+				return d[id.split("_")[0]] == id.split("_")[1] && d.target == classification
+			});
+			for (i=0;i<rows_array.length;i++) {
+				id_point = rows_array[i]["ID"]
+				d3.select("#scatterplot").selectAll("circle")
+					.filter(function(d) {return this.getAttribute("identifier") == id_point})
+					.attr("fill","red")
+					.attr("r", "5");
+			}
+
+		})
+	}
+
+	function resolve_value(key,attr) {
+		d3.csv("pca.csv", function(rows) {
+			row = rows.filter(function(d) {
+				return d.ID == key
+			});
+			d3.select(".text_" + key).text(row[0][attr])
+		})
+	}
+
+	function get_num_instances(type,row_id,classification) {
+		d3.csv(type+"_instances.csv", function(rows) {
+			var row = rows.filter(function(d) {
+				return d[type] == row_id
+			});
+			if (classification == '0') {
+				d3.select(".text_" + row_id + classification).text(row[0][0])
+			} else {
+				d3.select(".text_" + row_id + classification).text(row[0][1])
+			}
+		})
+	}
+
+	function draw_linechart(data) {
+
+		var container_dimensions = {width: 700, height: 400},
+			margins = {top: -50, right: 20, bottom: 50, left: 50},
+			chart_dimensions = {
+				width: container_dimensions.width - margins.left - margins.right,
+				height: container_dimensions.height - margins.top - margins.bottom
+			};
+
+		time_scale = d3.scaleLinear()
+			.range([0, chart_dimensions.width - 100])
+			.domain([0, 600]);
+
+		amount_scale = d3.scaleLinear()
+			.range([chart_dimensions.height, 0])
+			.domain([min_value,max_value]);
+
+		var tickLabels = ["", "Sept","Aug","July","June","May","April"]
+
+		var time_axis = d3.axisBottom(time_scale)
+			.ticks(6)
+			.tickValues([0, 100, 200, 300, 400, 500, 600])
+			.tickFormat(function(d,i){ return tickLabels[i] });
+
+		var amount_axis = d3.axisLeft(amount_scale)
+
+		var line_chart = d3.select("#linechart")
+			//.append("svg")
+				.attr("width", container_dimensions.width)
+				.attr("height", container_dimensions.height)
+			.append("g")
+				.attr("transform", "translate(" + margins.left + "," + margins.top + ")")
+				.attr("id","line_chart");
+
+		line_chart.append("g")
+			.attr("class", "xaxis")
+			.attr("transform", "translate(0," + chart_dimensions.height + ")")
+			.call(time_axis)
+
+		line_chart.append("g")
+			.attr("class", "yaxis")
+			.call(amount_axis)
+
+	}
+
+	function draw_scatterplot(rows) {
+		rows=rows.sort(function(a,b){ return d3.ascending(a.target, b.target);});
+		var x = d3.scaleLinear()
+			.range([0, width-10]);
+
+		var y = d3.scaleLinear()
+			.range([height-10, 0]);
+		var xAxis = d3.axisBottom(x);
+		var yAxis = d3.axisLeft(y);
+		var x = d3.scaleLinear()
+			.domain(d3.extent(rows, function(d) {
+				return +d.X1
+			}))
+			.range([10, width-10]);
+		var y = d3.scaleLinear()
+			.domain(d3.extent(rows, function(d) {
+				return +d.X2
+			}))
+			.range([10, height-10]);
+
+		var svg = d3.select("#scatterplot")
+			.attr("width", width)
+			.attr("height", height)
+			.append("g")
+			.attr("transform", "translate("+50+","+(-50)+")")
+
+		svg.selectAll("circle").data(rows).enter()
+			.append("circle")
+			.attr("cx", function(d) {
+				return x(d.X1);
+			})
+			.attr("cy", function(d) {
+				return height - x(d.X2);
+			})
+			.attr("r", "2")
+			.attr("fill", function(d) {
+				return color(d.target)
+			})
+			.attr("target", function(d) {
+				return d.target
+			})
+			.attr("clicked", "false")
+			.attr("class","selected")
+			.attr("identifier", function(d) {
+				return d.ID;
+			})
+			.on("mouseover", function(d) {
+				d3.select(this).transition().duration(200).attr("r", 7);
+				div.transition()
+					.duration(200)
+					.style("opacity", .9);
+				div.html(d.ID)
+					.style("left", (d3.event.pageX) + "px")
+					.style("top", (d3.event.pageY - 28) + "px");
+			})
+			.on("mouseout", function(d) {
+				if (this.getAttribute("fill") != "red") {
+				d3.select(this).transition().duration(200).attr("r", 2);
+				div.transition()
+					.duration(500)
+					.style("opacity", 0);
+			}
+			else{	//these are the points selected by the stack barcharts
+				d3.select(this).transition().duration(200).attr("r", 5);
+				div.transition()
+					.duration(500)
+					.style("opacity", 0);
+			}})
+			.on("click", function(d) {
+				var points = d3.select("#scatterplot").selectAll("circle").filter(function() {
+					return this.getAttribute("fill") == "red"
+				})
+				for (i=0;i<points["_groups"][0].length;i++) {
+					points["_groups"][0][i].setAttribute("fill",color(points["_groups"][0][i].getAttribute("target")));
+					points["_groups"][0][i].setAttribute("r","2");
+				}
+				draw_line(d);
+				highlight_parallel_by_id(this.getAttribute("identifier"))
+				if (this.getAttribute("clicked") == "false"){
+
+					this.setAttribute("clicked", "true");
+					this.setAttribute("r", "5");
+					this.setAttribute("fill", "red");
+				}
+				else{
+					this.setAttribute("clicked", "false");
+					this.setAttribute("r", "2");
+					this.setAttribute("fill", color(this.getAttribute("target")));
+				}
+			});
+
+
+		svg.append("g")
+			.attr("class", "xaxis")
+			.attr("transform", "translate(0," + height + ")")
+			.call(xAxis)
+			.append("text")
+			.attr("class", "label")
+			.attr("x", width)
+			.attr("y", height)
+			.style("text-anchor", "start")
+			.text("X1");
+
+		svg.append("g")
+			.attr("class", "yaxis")
+			.call(yAxis)
+			.append("text")
+			.attr("class", "label")
+			.attr("transform", "rotate(-90)")
+			.attr("y", 6)
+			.attr("dy", ".71em")
+			.style("text-anchor", "start")
+			.text("X2");
+
+		var legend = d3.select("svg").selectAll(".legend")
+			 .data(color.domain())
+			 .enter().append("g")
+			 .classed("legend", true)
+			 .attr("transform", function(d, i) {
+					 return "translate(0," + i * 20 + ")";
+			 })
+			 .attr("class", "selected");
+
+		legend.append("rect")
+			.attr("x", width -10)
+			.attr("y", 20)
+			.attr("width", 12)
+			.attr("height", 12)
+			.style("fill", color)
+			.on("click", function(t) {
+
+				d3.select("#scatterplot").selectAll("rect").attr("class","unselected");
+				d3.select(this).attr("class","selected");
+				d3.selectAll("[label]").each(function() {
+					var x = d3.select(this)
+					if (t==0) {
+						if (x.text() == "Correct") x.attr("class","selected")
+						else x.attr("class","unselected")
+					}
+					else {
+						if (x.text() == "Correct") x.attr("class","unselected")
+						else x.attr("class","selected")
+					}
+				});
+
+				d3.selectAll("circle").filter(function(d) { return d.target == t; }).attr("class","selected");
+				d3.selectAll("circle").filter(function(d) { return d.target == !+t; }).attr("class","unselected");
+			});
+
+		legend.append("text")
+			.attr("label","text_legend")
+			.attr("x", width - 80)
+			.attr("y", 20)
+			.attr("dy", ".65em")
+			.text(function(d) {
+				if (d==0){
+					return "Correct";
+				}
+				else{
+					return "Default";
+				}
+			});
+
+		draw_linechart();
+	}
+</script>
+
+</html>
