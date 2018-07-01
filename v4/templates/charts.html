@@ -7,6 +7,7 @@
 	<meta http-equiv="content-type" content="text/html;charset=utf-8">
 	<title>Loading data</title>
 	<script type="text/javascript" src="d3.v4.js"></script>
+	<script type="text/javascript" src="jquery-3.3.1.js"></script>
 	<style type="text/css">
 		div.tooltip {
 			position: absolute;
@@ -88,9 +89,10 @@
 
 	</div>
 	<div id="forms">
-		<form action="????" method="post">
+		<!--form action="????" method="post"-->
+		<form id="newInstanceForm" onSubmit="getFormValues();" >
 			<fieldset>
-			<input id="sep_bill" type="text" placeholder="sep_bill">
+			<input id="sep_bill" type="text" placeholder="sep_bill" onClick="getFormValues();">
 			<input id="aug_bill" type="text" placeholder="aug_bill">
 			<input id="jul_bill" type="text" placeholder="jul_bill">
 			<input id="jun_bill" type="text" placeholder="jun_bill">
@@ -168,18 +170,7 @@
 		draw_stackbarchart("MARRIAGE");
 		draw_stackbarchart("EDUCATION");
 		draw_parallel();
-		var month=["sep", "aug", "jul", "jun", "may", "apr"];
 
-		d3.data(month)
-		.enter()
-		.append("input")
-			.attr("id", function(d){
-				return d+"_paid";
-			})
-			.attr("type", "text")
-			.attr("placeholder", function(d){
-				return d+"_paid";
-			});
 	});
 
 	function draw_parallel(){
@@ -254,8 +245,15 @@
 									points["_groups"][0][i].setAttribute("fill",color(points["_groups"][0][i].getAttribute("target")));
 									points["_groups"][0][i].setAttribute("r", 2);
 								}
-
-								draw_line(d);
+								
+								var instance = d
+								d3.csv("standardized_data.csv", function(rows) {
+									row = rows.filter(function(d) {
+										return d.ID == instance.ID
+									});
+									draw_line(row[0]);
+								})								
+								
 								var new_point=d3.select("#scatterplot").selectAll("circle").filter(function(){
 									return this.getAttribute("identifier") == id;
 								});
@@ -1056,7 +1054,6 @@
 	});
 }
 
-
 	function highlight_points(id,y) {
 
 		d3.select("#line_chart").selectAll("g").filter(function() {
@@ -1339,6 +1336,31 @@
 			});
 
 		draw_linechart();
+	}
+
+	function getFormValues() {
+		/*var values = {}
+		var formFields = document.getElementById("newInstanceForm").elements
+		for(i=0;i<formFields.length;i++) {
+			if (formFields[i]["type"] == "text") {
+				values[formFields[i]["id"]] = formFields[i].value
+			}
+		}
+		values["sex"] = formFields["sex"].value
+		values["marriage"] = formFields["marriage"].value
+		values["education"] = formFields["education"].value*/
+		var values ="ciao"
+		$.ajax({
+			url: '/prova',
+			method: 'POST',
+			data: $(values).serialize(),
+			success: function(response) {
+                console.log(response);
+            },
+            error: function(error) {
+                console.log(error);
+            }
+		});
 	}
 </script>
 

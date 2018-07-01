@@ -11,7 +11,11 @@ def index():
 def send_js(path):
     return send_from_directory('static', path)
 
-
+@app.route('/prova', methods=['POST'])
+def getValues():
+    return 'ok';
+    
+    
 if __name__ == "__main__":
     app.jinja_env.auto_reload = True
     #app.config["DEBUG"]=True
