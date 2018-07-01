@@ -82,10 +82,12 @@
 		<svg id="parallel"></svg>
 		<svg id="scatterplot"></svg>
 		<svg id="linechart"></svg>
-
 	</div>
 	<div id="stackbarcharts">
-
+	</div>
+	<div id="forms">
+		<p>ciao</p>
+		<form></form>
 	</div>
 </body>
 
@@ -120,6 +122,34 @@
 		draw_stackbarchart("MARRIAGE");
 		draw_stackbarchart("EDUCATION");
 		draw_parallel();
+
+		var month=["sep", "aug", "jul", "jun", "may", "apr"];
+		d3.select("#forms")
+		.select("form")
+		.data(month)
+		.enter()
+		.append("input")
+			.attr("id", function(d){
+				return d+"_bill";
+			})
+			.attr("type", "text")
+			.attr("placeholder", function(d){
+				return d+"_bill";
+			});
+
+		d3.select("#forms")
+		.select("form")
+		.data(month)
+		.enter()
+		.append("input")
+			.attr("id", function(d){
+				return d+"_paid";
+			})
+			.attr("type", "text")
+			.attr("placeholder", function(d){
+				return d+"_paid";
+			});
+		}
 	});
 
 	function draw_parallel(){
