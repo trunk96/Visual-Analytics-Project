@@ -14,4 +14,6 @@ def send_js(path):
 
 if __name__ == "__main__":
     app.jinja_env.auto_reload = True
-    app.run(host='0.0.0.0')
+    #app.config["DEBUG"]=True
+    #app.config["TEMPLATES_AUTO_RELOAD"]=True
+    app.run(debug=True)

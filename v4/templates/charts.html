@@ -87,6 +87,54 @@
 	<div id="stackbarcharts">
 
 	</div>
+	<div id="forms">
+		<form action="????" method="post">
+			<fieldset>
+			<input id="sep_bill" type="text" placeholder="sep_bill">
+			<input id="aug_bill" type="text" placeholder="aug_bill">
+			<input id="jul_bill" type="text" placeholder="jul_bill">
+			<input id="jun_bill" type="text" placeholder="jun_bill">
+			<input id="may_bill" type="text" placeholder="may_bill">
+			<input id="apr_bill" type="text" placeholder="apr_bill">
+			</fieldset>
+
+
+			<fieldset>
+			<input id="sep_paid" type="text" placeholder="sep_paid">
+			<input id="aug_paid" type="text" placeholder="aug_paid">
+			<input id="jul_paid" type="text" placeholder="jul_paid">
+			<input id="jun_paid" type="text" placeholder="jun_paid">
+			<input id="may_paid" type="text" placeholder="may_paid">
+			<input id="apr_paid" type="text" placeholder="apr_paid">
+			</fieldset>
+
+
+			<fieldset style="float: left;">
+			<input id="age" type="text" placeholder="age">
+			</fieldset>
+
+			<fieldset style="float: left;">
+			<input class="sex" type="radio" value="Male" name="sex">Male<br>
+			<input class="sex" type="radio" value="Female" name="sex">Female<br>
+			</fieldset>
+
+			<fieldset style="float: left;">
+			<input class="marriage" type="radio" value="Married" name="marriage">Married<br>
+			<input class="marriage" type="radio" value="Single" name="marriage">Single<br>
+			<input class="marriage" type="radio" value="Other" name="marriage">Other<br>
+			<input class="marriage" type="radio" value="Unknown" name="marriage">Unknown<br>
+			</fieldset>
+
+			<fieldset style="float: left;">
+			<input class="education" type="radio" value="High School" name="education">High School<br>
+			<input class="education" type="radio" value="University" name="education">University<br>
+			<input class="education" type="radio" value="Graduate School" name="education">Graduate School<br>
+			<input class="education" type="radio" value="Other" name="education">Other<br>
+			<input class="education" type="radio" value="Unknown" name="education">Unknown<br>
+			</fieldset>
+			<input type="submit" value="Submit" style="float: right;">
+		</form>
+	</div>
 </body>
 
 <script type="text/javascript">
@@ -120,6 +168,18 @@
 		draw_stackbarchart("MARRIAGE");
 		draw_stackbarchart("EDUCATION");
 		draw_parallel();
+		var month=["sep", "aug", "jul", "jun", "may", "apr"];
+
+		d3.data(month)
+		.enter()
+		.append("input")
+			.attr("id", function(d){
+				return d+"_paid";
+			})
+			.attr("type", "text")
+			.attr("placeholder", function(d){
+				return d+"_paid";
+			});
 	});
 
 	function draw_parallel(){
