@@ -1,4 +1,4 @@
-from flask import Flask, render_template, send_from_directory
+from flask import Flask, render_template, send_from_directory, request, jsonify
 
 
 app = Flask(__name__, static_folder='/static');
@@ -11,10 +11,17 @@ def index():
 def send_js(path):
     return send_from_directory('static', path)
 
-@app.route('/prova', methods=['POST'])
+@app.route('/getValues', methods=['POST'])
 def getValues():
-    return 'ok';
-    
+	f = open("static/prova.csv","a")
+	line = ""
+	name = {}
+	for key, value in request.form.items():
+		name[ key ] = value
+		line += value+","
+	f.write(line+"\n")
+	f.close()
+	return "done"
     
 if __name__ == "__main__":
     app.jinja_env.auto_reload = True

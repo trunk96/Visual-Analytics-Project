@@ -89,10 +89,10 @@
 
 	</div>
 	<div id="forms">
-		<!--form action="????" method="post"-->
-		<form id="newInstanceForm" onSubmit="getFormValues();" >
+		<!--form action="????" method="post" -->
+		<form id="newInstanceForm" onSubmit="getFormValues();return false;">
 			<fieldset>
-			<input id="sep_bill" type="text" placeholder="sep_bill" onClick="getFormValues();">
+			<input id="sep_bill" type="text" placeholder="sep_bill">
 			<input id="aug_bill" type="text" placeholder="aug_bill">
 			<input id="jul_bill" type="text" placeholder="jul_bill">
 			<input id="jun_bill" type="text" placeholder="jun_bill">
@@ -1339,7 +1339,7 @@
 	}
 
 	function getFormValues() {
-		/*var values = {}
+		var values = {}
 		var formFields = document.getElementById("newInstanceForm").elements
 		for(i=0;i<formFields.length;i++) {
 			if (formFields[i]["type"] == "text") {
@@ -1348,19 +1348,22 @@
 		}
 		values["sex"] = formFields["sex"].value
 		values["marriage"] = formFields["marriage"].value
-		values["education"] = formFields["education"].value*/
-		var values ="ciao"
+		values["education"] = formFields["education"].value
+
 		$.ajax({
-			url: '/prova',
+			url: '/getValues',
 			method: 'POST',
-			data: $(values).serialize(),
+			data: values,
+			cache: false,
 			success: function(response) {
-                console.log(response);
+				document.getElementById("newInstanceForm").reset()
+				location.reload();
             },
             error: function(error) {
                 console.log(error);
             }
 		});
+		
 	}
 </script>
 
