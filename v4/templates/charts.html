@@ -245,15 +245,15 @@
 									points["_groups"][0][i].setAttribute("fill",color(points["_groups"][0][i].getAttribute("target")));
 									points["_groups"][0][i].setAttribute("r", 2);
 								}
-								
+
 								var instance = d
 								d3.csv("standardized_data.csv", function(rows) {
 									row = rows.filter(function(d) {
 										return d.ID == instance.ID
 									});
 									draw_line(row[0]);
-								})								
-								
+								})
+
 								var new_point=d3.select("#scatterplot").selectAll("circle").filter(function(){
 									return this.getAttribute("identifier") == id;
 								});
@@ -1356,13 +1356,14 @@
 			data: values,
 			success: function(response) {
 				document.getElementById("newInstanceForm").reset()
-				location.reload();
+				alert("Added new instace with id "+response);
+				//location.reload();
             },
             error: function(error) {
                 console.log(error);
             }
 		});
-		
+
 	}
 </script>
 
