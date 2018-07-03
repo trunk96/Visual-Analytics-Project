@@ -659,7 +659,7 @@
 								.on("click", function() {
 									sort_age = true
 									to_barchart(selected_legend);
-								})
+								})								
 
 							g.append("text")
 								.attr("x", 740)
@@ -825,7 +825,7 @@
 								return "Default";
 							}
 						});
-
+						
 					g.append("rect")
 						.attr("id","reset_rect_"+type)
 						.attr("x", width - 45)
@@ -835,7 +835,7 @@
 						.attr("height", 19)
 						.attr("fill", "grey")
 						.on("click", function(d) {re_draw_stack(type)})
-
+							
 					g.append("text")
 						.attr("x", width-19)
 						.attr("y", 63)
@@ -843,7 +843,7 @@
 						.attr("font-size", 10)
 						.attr("text-anchor", "start")
 						.text("Reset")
-
+				
 				}
 			);
 		}
@@ -853,7 +853,7 @@
 			draw_stackbarchart(type, true);
 		}
 	}
-
+	
 	function compute_total (d, i, columns) {
 		for (i = 1, t = 0; i < columns.length; ++i) t += d[columns[i]] = +d[columns[i]];
 		d.total = t;
@@ -1118,7 +1118,7 @@
 
 		d3.selectAll("#"+id).filter(function() {
 			return this.parentNode.getAttribute("fill") == color(classification) || this.getAttribute("fill") == color(classification)
-		}).attr("fill","red")
+		}).attr("fill","red")		
 
 		d3.csv("pca.csv", function(rows) {
 			rows_array = rows.filter(function(d) {
@@ -1332,7 +1332,7 @@
 			.attr("height", 12)
 			.style("fill", color)
 			.on("click", function(t) {
-
+				
 				draw_reset_rect(d3.select("svg"));
 				d3.select("#scatterplot").selectAll("rect").attr("class","unselected");
 				d3.select(this).attr("class","selected");
@@ -1367,6 +1367,31 @@
 			});
 
 		draw_linechart();
+		
+		function draw_reset_rect(g) {
+			g.append("rect")
+				.attr("id","reset_rect_scatterplot")
+				.attr("x", width-10)
+				.attr("y", 68)
+				.attr("width", 12)
+				.attr("height", 12)
+				.attr("fill", "grey")
+				.on("click", function(d) {re_draw_scatterplot(rows)})
+					
+			g.append("text")
+				.attr("id","reset_text_scatterplot")
+				.attr("x", width-80)
+				.attr("y", 70)
+				.attr("dy", ".65em")
+				.text("Reset")			
+		}
+		
+		function re_draw_scatterplot(rows) {
+			d3.select("#scatterplot").selectAll("g").remove()
+			d3.select("#reset_rect_scatterplot").remove()
+			d3.select("#reset_text_scatterplot").remove()
+			draw_scatterplot(rows)
+		}
 	}
 
 	function getFormValues() {
