@@ -116,23 +116,23 @@
 			</fieldset>
 
 			<fieldset style="float: left;">
-			<input class="sex" type="radio" value="Male" name="sex">Male<br>
-			<input class="sex" type="radio" value="Female" name="sex">Female<br>
+			<input class="sex" type="radio" value="1" name="sex">Male<br>
+			<input class="sex" type="radio" value="2" name="sex">Female<br>
 			</fieldset>
 
 			<fieldset style="float: left;">
-			<input class="marriage" type="radio" value="Married" name="marriage">Married<br>
-			<input class="marriage" type="radio" value="Single" name="marriage">Single<br>
-			<input class="marriage" type="radio" value="Other" name="marriage">Other<br>
-			<input class="marriage" type="radio" value="Unknown" name="marriage">Unknown<br>
+			<input class="marriage" type="radio" value="1" name="marriage">Married<br>
+			<input class="marriage" type="radio" value="2" name="marriage">Single<br>
+			<input class="marriage" type="radio" value="3" name="marriage">Other<br>
+			<input class="marriage" type="radio" value="0" name="marriage">Unknown<br>
 			</fieldset>
 
 			<fieldset style="float: left;">
-			<input class="education" type="radio" value="High School" name="education">High School<br>
-			<input class="education" type="radio" value="University" name="education">University<br>
-			<input class="education" type="radio" value="Graduate School" name="education">Graduate School<br>
-			<input class="education" type="radio" value="Other" name="education">Other<br>
-			<input class="education" type="radio" value="Unknown" name="education">Unknown<br>
+			<input class="education" type="radio" value="3" name="education">High School<br>
+			<input class="education" type="radio" value="2" name="education">University<br>
+			<input class="education" type="radio" value="1" name="education">Graduate School<br>
+			<input class="education" type="radio" value="4" name="education">Other<br>
+			<input class="education" type="radio" value="0" name="education">Unknown<br>
 			</fieldset>
 			<input type="submit" value="Submit" style="float: right;">
 		</form>
@@ -1172,7 +1172,8 @@
 
 	}
 
-	function draw_scatterplot(rows) {
+	function draw_scatterplot() {
+		d3.csv("pca.csv", function(rows){
 		rows=rows.sort(function(a,b){ return d3.ascending(a.target, b.target);});
 		var x = d3.scaleLinear()
 			.range([0, width-10]);
@@ -1336,6 +1337,7 @@
 			});
 
 		draw_linechart();
+	});
 	}
 
 	function getFormValues() {
