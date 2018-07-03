@@ -1,0 +1,144 @@
+% THIS IS AN EXAMPLE DOCUMENT FOR VLDB 2012
+% based on ACM SIGPROC-SP.TEX VERSION 2.7
+% Modified by  Gerald Weber <gerald@cs.auckland.ac.nz>
+% Removed the requirement to include *bbl file in here. (AhmetSacan, Sep2012)
+% Fixed the equation on page 3 to prevent line overflow. (AhmetSacan, Sep2012)
+
+\documentclass{vldb}
+\usepackage{graphicx}
+\usepackage{balance}  % for  \balance command ON LAST PAGE  (only there!)
+
+\setlength\parindent{0pt}
+\begin{document}
+
+% ****************** TITLE ****************************************
+
+\title{Visual Analytics on Credit Cards Defaults}
+\subtitle{Visual Analytics project, A.Y. 2017/2018}
+
+% possible, but not really needed or used for PVLDB:
+%\subtitle{[Extended Abstract]
+%\titlenote{A full version of this paper is available as\textit{Author's Guide to Preparing ACM SIG Proceedings Using \LaTeX$2_\epsilon$\ and BibTeX} at \texttt{www.acm.org/eaddress.htm}}}
+
+% ****************** AUTHORS **************************************
+
+% You need the command \numberofauthors to handle the 'placement
+% and alignment' of the authors beneath the title.
+%
+% For aesthetic reasons, we recommend 'three authors at a time'
+% i.e. three 'name/affiliation blocks' be placed beneath the title.
+%
+% NOTE: You are NOT restricted in how many 'rows' of
+% "name/affiliations" may appear. We just ask that you restrict
+% the number of 'columns' to three.
+%
+% Because of the available 'opening page real-estate'
+% we ask you to refrain from putting more than six authors
+% (two rows with three columns) beneath the article title.
+% More than six makes the first-page appear very cluttered indeed.
+%
+% Use the \alignauthor commands to handle the names
+% and affiliations for an 'aesthetic maximum' of six authors.
+% Add names, affiliations, addresses for
+% the seventh etc. author(s) as the argument for the
+% \additionalauthors command.
+% These 'additional authors' will be output/set for you
+% without further effort on your part as the last section in
+% the body of your article BEFORE References or any Appendices.
+
+\numberofauthors{2} %  in this sample file, there are a *total*
+% of EIGHT authors. SIX appear on the 'first-page' (for formatting
+% reasons) and the remaining two appear in the \additionalauthors section.
+
+\author{
+% You can go ahead and credit any number of authors here,
+% e.g. one 'row of three' or two rows (consisting of one row of three
+% and a second row of one, two or three).
+%
+% The command \alignauthor (no curly braces needed) should
+% precede each author name, affiliation/snail-mail address and
+% e-mail address. Additionally, tag each line of
+% affiliation/address with \affaddr, and tag the
+% e-mail address with \email.
+%
+% 1st. author
+\alignauthor
+Maria Ludovica Costagliola
+% 2nd. author
+\alignauthor
+Emanuele De Santis
+}
+% There's nothing stopping you putting the seventh, eighth, etc.
+% author on the opening page (as the 'third row') but we ask,
+% for aesthetic reasons that you place these 'additional authors'
+% in the \additional authors block, viz.
+
+% Just remember to make sure that the TOTAL number of authors
+% is the number that will appear on the first page PLUS the
+% number that will appear in the \additionalauthors section.
+
+
+\maketitle
+
+\begin{abstract}
+The project was developed during the Visual Analytics course. It concerns the visualization of credit cards owners data in order to
+make the bank director knowing the customers that are supposed to not be able to pay the credit card bill in the next month.
+
+All data are represented using simple and well-known views that immediately highlights similarities among customers and give to the user an
+overview on all customers.
+\end{abstract}
+
+
+
+
+\section{Introduction}
+After the paper presentation done during the lectures, we decided to focus our attention on a dataset related to bank transactions.
+Most of the bank transactions datasets are not public available (or they contains few useful information to protect users' privacy), but we were able to find
+a dataset related to this field.
+
+We were thinking about the need for a bank director to always know how customers with a credit card from his financial istitution behave. Particularly, we pay attention
+to the last payments and to the corresponding bank account balances of those customers.
+
+From these data and from some other personal information of the customer (for example age, marriage status, ...), it is possible to identify the ones that probably will not be able
+to pay the credit card bill in the next month.
+
+The prediction is done by a machine learning algorithm, but the result is useless if it is not combined with an efficient visualization of the whole data. In fact, with this visualization
+a bank director is able to better understand the result of the machine learning algorithm, considering also the similarity between the result and some preexisting patterns or clusters.
+
+
+\section{Dataset}
+The dataset used in this project is taken from UCI database \cite{UCI:2016}, it contains about 30000 tuples, each with 24 attributes. Since there are some missing fields in some tuples, we
+had to remove all of these tuples from the original dataset
+
+
+
+%\end{document}  % This is where a 'short' article might terminate
+
+% ensure same length columns on last page (might need two sub-sequent latex runs)
+
+
+
+%\balance
+
+%ACKNOWLEDGMENTS are optional
+
+% The following two commands are all you need in the
+% initial runs of your .tex file to
+% produce the bibliography for the citations in your paper.
+\bibliographystyle{abbrv}
+\bibliography{vldb_sample}  % vldb_sample.bib is the name of the Bibliography in this case
+% You must have a proper ".bib" file
+%  and remember to run:
+% latex bibtex latex latex
+% to resolve all references
+
+
+
+%APPENDIX is optional.
+% ****************** APPENDIX **************************************
+% Example of an appendix; typically would start on a new page
+%pagebreak
+
+
+
+\end{document}
