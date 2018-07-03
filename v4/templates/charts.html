@@ -116,23 +116,23 @@
 			</fieldset>
 
 			<fieldset style="float: left;">
-			<input class="sex" type="radio" value="1" name="sex">Male<br>
-			<input class="sex" type="radio" value="2" name="sex">Female<br>
+			<input class="sex" type="radio" value="Male" name="sex">Male<br>
+			<input class="sex" type="radio" value="Female" name="sex">Female<br>
 			</fieldset>
 
 			<fieldset style="float: left;">
-			<input class="marriage" type="radio" value="1" name="marriage">Married<br>
-			<input class="marriage" type="radio" value="2" name="marriage">Single<br>
-			<input class="marriage" type="radio" value="3" name="marriage">Other<br>
-			<input class="marriage" type="radio" value="0" name="marriage">Unknown<br>
+			<input class="marriage" type="radio" value="Married" name="marriage">Married<br>
+			<input class="marriage" type="radio" value="Single" name="marriage">Single<br>
+			<input class="marriage" type="radio" value="Other" name="marriage">Other<br>
+			<input class="marriage" type="radio" value="Unknown" name="marriage">Unknown<br>
 			</fieldset>
 
 			<fieldset style="float: left;">
-			<input class="education" type="radio" value="3" name="education">High School<br>
-			<input class="education" type="radio" value="2" name="education">University<br>
-			<input class="education" type="radio" value="1" name="education">Graduate School<br>
-			<input class="education" type="radio" value="4" name="education">Other<br>
-			<input class="education" type="radio" value="0" name="education">Unknown<br>
+			<input class="education" type="radio" value="High School" name="education">High School<br>
+			<input class="education" type="radio" value="University" name="education">University<br>
+			<input class="education" type="radio" value="Graduate School" name="education">Graduate School<br>
+			<input class="education" type="radio" value="Other" name="education">Other<br>
+			<input class="education" type="radio" value="Unknown" name="education">Unknown<br>
 			</fieldset>
 			<input type="submit" value="Submit" style="float: right;">
 		</form>
@@ -165,10 +165,10 @@
 		})
 
 		draw_scatterplot(rows);
-		draw_stackbarchart("AGE");
-		draw_stackbarchart("SEX");
-		draw_stackbarchart("MARRIAGE");
-		draw_stackbarchart("EDUCATION");
+		draw_stackbarchart("AGE", false);
+		draw_stackbarchart("SEX", false);
+		draw_stackbarchart("MARRIAGE", false);
+		draw_stackbarchart("EDUCATION", false);
 		draw_parallel();
 
 	});
@@ -318,14 +318,21 @@
 		}
 	}
 
-	function draw_stackbarchart(t){
+	function draw_stackbarchart(t, div_present){
 
 		var type=t;
 		var values,labels;
 		var sort_age=false;
-		var svg=d3.select("#stackbarcharts")
+		if(!div_present){
+			var svg=d3.select("#stackbarcharts")
 							.append("div").attr("id", "div-"+type)
 							.append("svg").attr("id", type);
+		}
+		else{
+			var svg=d3.select("#stackbarcharts")
+							.select("#div-"+type)
+							.append("svg").attr("id", type);
+		}
 		if (t=="AGE"){
 			svg.attr("width", 960).attr("height", 250).style("float", "left")
 			svg.append("rect")
@@ -431,7 +438,7 @@
 			d3.csv("AGE_frequency.csv", compute_total, draw_stack);
 		}
 
-		function draw_stack (error, data) {
+		function draw_stack (data) {
 			//if (error) throw error;
 
 			var keys = data.columns.slice(1);
@@ -650,7 +657,7 @@
 								.attr("height", 19)
 								.attr("fill", "grey")
 								.on("click", function() {
-									sort_age=true;
+									sort_age = true
 									to_barchart(selected_legend);
 								})
 
@@ -818,10 +825,33 @@
 								return "Default";
 							}
 						});
+
+					g.append("rect")
+						.attr("id","reset_rect_"+type)
+						.attr("x", width - 45)
+						.attr("text-anchor", "start")
+						.attr("y", 50)
+						.attr("width", 19)
+						.attr("height", 19)
+						.attr("fill", "grey")
+						.on("click", function(d) {re_draw_stack(type)})
+
+					g.append("text")
+						.attr("x", width-19)
+						.attr("y", 63)
+						.attr("font-family", "sans-serif")
+						.attr("font-size", 10)
+						.attr("text-anchor", "start")
+						.text("Reset")
+
 				}
 			);
 		}
 
+		function re_draw_stack(type) {
+			d3.select("#"+type).remove();
+			draw_stackbarchart(type, true);
+		}
 	}
 
 	function compute_total (d, i, columns) {
@@ -1087,7 +1117,7 @@
 		else classification = 1
 
 		d3.selectAll("#"+id).filter(function() {
-			return this.parentNode.getAttribute("fill") == color(classification)
+			return this.parentNode.getAttribute("fill") == color(classification) || this.getAttribute("fill") == color(classification)
 		}).attr("fill","red")
 
 		d3.csv("pca.csv", function(rows) {
@@ -1303,6 +1333,7 @@
 			.style("fill", color)
 			.on("click", function(t) {
 
+				draw_reset_rect(d3.select("svg"));
 				d3.select("#scatterplot").selectAll("rect").attr("class","unselected");
 				d3.select(this).attr("class","selected");
 				d3.selectAll("[label]").each(function() {
