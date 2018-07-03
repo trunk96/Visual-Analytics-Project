@@ -1172,8 +1172,7 @@
 
 	}
 
-	function draw_scatterplot() {
-		d3.csv("pca.csv", function(rows){
+	function draw_scatterplot(rows) {
 		rows=rows.sort(function(a,b){ return d3.ascending(a.target, b.target);});
 		var x = d3.scaleLinear()
 			.range([0, width-10]);
@@ -1337,7 +1336,6 @@
 			});
 
 		draw_linechart();
-	});
 	}
 
 	function getFormValues() {

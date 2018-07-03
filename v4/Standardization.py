@@ -26,7 +26,7 @@ def action():
         midDf=pd.concat([midDf, data[[elem]]], axis=1)
     almostFinalDF = pd.concat([midDf, standard_data_frame], axis = 1)
     finalDf = pd.concat([almostFinalDF, data[["target"]]], axis = 1)
-    finalDf.to_csv("standardized_data.csv", sep=',', index=False)
+    finalDf.to_csv("static/standardized_data.csv", sep=',', index=False)
     return 0;
 
 if __name__ == "__main__":
