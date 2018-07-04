@@ -1,5 +1,8 @@
 \begin{thebibliography}{1}
 
+\bibitem{d3:2018}
+D3 api reference.
+
 \bibitem{Boser:1992:TAO:130385.130401}
 B.~E. Boser, I.~M. Guyon, and V.~N. Vapnik.
 \newblock A training algorithm for optimal margin classifiers.

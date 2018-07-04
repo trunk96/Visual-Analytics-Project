@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017/Debian) (preloaded format=latex 2018.4.26)  4 JUL 2018 23:26
+This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017/Debian) (preloaded format=latex 2018.4.26)  4 JUL 2018 23:31
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -421,12 +421,12 @@ Package rerunfilecheck Info: File `template.out' has not changed.
 Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 348.
  ) 
 Here is how much of TeX's memory you used:
- 5182 strings out of 494840
- 77409 string characters out of 6178710
- 163214 words of memory out of 5000000
- 8465 multiletter control sequences out of 15000+600000
+ 5183 strings out of 494840
+ 77418 string characters out of 6178710
+ 163243 words of memory out of 5000000
+ 8466 multiletter control sequences out of 15000+600000
  25235 words of font info for 59 fonts, out of 8000000 for 9000
  59 hyphenation exceptions out of 8191
  29i,8n,29p,483b,370s stack positions out of 5000i,500n,10000p,200000b,80000s
 
-Output written on template.dvi (4 pages, 31540 bytes).
+Output written on template.dvi (4 pages, 32008 bytes).

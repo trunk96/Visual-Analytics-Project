@@ -191,7 +191,7 @@ resolution supported is 1024x768).
   \caption{Scatterplot that represents the whole dataset. Each point is a customer and the color of the point encodes the classification of each customer}
   \label{scatterplot}
 \end{figure}
-The scatterplot is the main view in the visualization. Each point represents a customer and the color encodes the classification of the customer (default or correct). The color scaling used is the \texttt{d3.scaleOrdinal(d3.schemeCategory10)}.
+The scatterplot is the main view in the visualization. Each point represents a customer and the color encodes the classification of the customer (default or correct). The color scaling used is the \texttt{d3.scaleOrdinal(d3.schemeCategory10)}\cite{d3:2018}.
 
 Due to the high dimensionality of the dataset, it was mandatory to apply a dimensionality reduction algorithm. We decided to apply PCA because it is fast and it doesn't require a deep knowledge of the problem, and we then took the first 2 components. This work is done by the python function \texttt{pca.action()} using \texttt{pandas} to read and parse the csv original dataset
 and \texttt{sklearn} to compute PCA values. The result is saved in \texttt{pca.csv}.

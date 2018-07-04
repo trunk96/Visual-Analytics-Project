@@ -3,44 +3,46 @@ Capacity: max_strings=100000, hash_size=100000, hash_prime=85009
 The top-level auxiliary file: template.aux
 The style file: abbrv.bst
 Database file #1: template.bib
-You've used 2 entries,
+Warning--to sort, need author or key in d3:2018
+You've used 3 entries,
             2118 wiz_defined-function locations,
-            512 strings with 4120 characters,
-and the built_in function-call counts, 718 in all, are:
-= -- 73
-> -- 25
+            514 strings with 4143 characters,
+and the built_in function-call counts, 866 in all, are:
+= -- 85
+> -- 26
 < -- 1
-+ -- 11
++ -- 12
 - -- 8
-* -- 40
-:= -- 113
-add.period$ -- 6
-call.type$ -- 2
-change.case$ -- 10
+* -- 45
+:= -- 127
+add.period$ -- 7
+call.type$ -- 3
+change.case$ -- 13
 chr.to.int$ -- 0
-cite$ -- 2
-duplicate$ -- 30
-empty$ -- 62
+cite$ -- 4
+duplicate$ -- 37
+empty$ -- 85
 format.name$ -- 8
-if$ -- 160
+if$ -- 197
 int.to.chr$ -- 0
-int.to.str$ -- 2
+int.to.str$ -- 3
 missing$ -- 1
-newline$ -- 12
+newline$ -- 15
 num.names$ -- 4
-pop$ -- 15
+pop$ -- 23
 preamble$ -- 1
-purify$ -- 8
+purify$ -- 10
 quote$ -- 0
-skip$ -- 27
+skip$ -- 37
 stack$ -- 0
-substring$ -- 43
-swap$ -- 11
+substring$ -- 48
+swap$ -- 12
 text.length$ -- 1
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 8
-warning$ -- 0
+type$ -- 12
+warning$ -- 1
 while$ -- 7
-width$ -- 3
-write$ -- 24
+width$ -- 4
+write$ -- 29
+(There was 1 warning)
