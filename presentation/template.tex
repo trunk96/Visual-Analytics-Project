@@ -107,7 +107,8 @@ updating all views.
   \teaser{
  \centering
  \includegraphics[width=16cm]{views}
-  \caption{Sceenshot of the entire interface}
+  \caption{Sceenshot of the entire interface. It is possible to see the behaviour of the tool when a point in the scatterplot
+  or a line in the parallel coordinates is clicked}
   }
 
 %% Uncomment below to disable the manuscript note
@@ -187,7 +188,7 @@ resolution supported is 1024x768).
 
 \begin{figure}[h]
   \includegraphics[scale=0.15]{scatterplot}
-  \caption{Scatterplot view of the tool}
+  \caption{Scatterplot that represents the whole dataset. Each point is a customer and the color of the point encodes the classification of each customer}
   \label{scatterplot}
 \end{figure}
 The scatterplot is the main view in the visualization. Each point represents a customer and the color encodes the classification of the customer (default or correct). The color scaling used is the \texttt{d3.scaleOrdinal(d3.schemeCategory10)}.
@@ -207,7 +208,7 @@ restore the original view.
 \begin{figure}[h]
   \centering
   \includegraphics[scale=0.15]{parallel}
-  \caption{Parallel Coordinates view of the tool}
+  \caption{Parallel Coordinates that represents the whole dataset, one line for each customer. The color again encodes the classification of the customer}
   \label{parallel}
 \end{figure}
 
@@ -227,7 +228,7 @@ Moreover it is possible to exchange the order of the axis, dragging the axis tha
 \begin{figure}[h]
   \centering
   \includegraphics[scale=0.15]{linechart}
-  \caption{Linechart view of the tool}
+  \caption{Linechart that represents previous bank account bills and payments for a certain customer, identified by his ID}
   \label{linechart}
 \end{figure}
 
