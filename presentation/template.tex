@@ -231,11 +231,12 @@ As soon as the page is loaded this view is empty and will be filled with the inf
 
 Each categorical attribute of the dataset is represented through a stacked barchart. This kind of visualization allows us to see at the same time the frequency distribution of both correct and default customers.
 There is one column for each different value of the categorical attribute composed by two sub-columns. Each of those represents the percentage of default (on the bottom) and of correct (on the top) instances in the dataset.
+These data are taken from \texttt{*\_frequency.csv}.
 
 We added some interactions with this chart. First of all, the element of the legend can be clicked in order to see only the frequency of the chosen classification;
 after this interaction, it spawns a reset button to restore the original view.
 
-A tooltip shows up mouseovering over a single bar; it contains the number of instances within its classification and its value for the attribute in exam. We decided to use a tooltip since the height of some bars
+A tooltip shows up mouseovering over a single bar; it contains the number of instances, taken from \texttt{*\_instances.csv}, within its classification and its value for the attribute in exam. We decided to use a tooltip since the height of some bars
 can be very small, so a number inside them could not be crearly visible or it could overflow to the bars close to it.
 
 Finally, each bar can be clicked: it will be highlighted together with all points in the scatterplot and lines in the parallel coordinates that correspond to customers
@@ -249,7 +250,7 @@ reason we choose to put the default percentage at the bottom of the stack.
 \subsubsection{Stacked Barchart: Age}
 \begin{figure}[h]
   \centering
-  \includegraphics[scale=0.15]{age}
+  \includegraphics[scale=0.13]{age}
   \caption{Stacked Barchart representing frequency distribution of ages}
   \label{age}
 \end{figure}
@@ -278,9 +279,24 @@ using a machine learning algorithm. The browser page will be reloaded and the ne
 
 \section{Analytics}
 
+As said before, it is important to let an user insert new instances, but these insertions have to be reflected on the entire interface, that has to be updated according to the new data.
+Moreover each new instance need to be classified to be correctly represented in the visualization and to update the frequency distributions.
 
+Since Javascript is not so fast handling large amount of data and it is not suitable doing intense computations, we needed to move the analytics part into a python program.
 
+To do so, we set up a small web server using the python library \texttt{flask} (that runs locally on our machines) that can communicate with the visualization.
 
+The visualization can be accessed after the server is started at the address \texttt{http://127.0.0.1:5000} (or \texttt{http://localhost:5000}). It is now possible to pass every field value of the form
+using AJAX call. AJAX sends an HTTP POST message to a fixed route of our web server, that contains a JSON payload that includes all fields.
+
+As soon as the web server is started, it starts training an SVM learner with all the pre-classified instances present in the original dataset (\texttt{dataset.csv}).
+SVM (Support Vector Machine) \cite{Boser:1992:TAO:130385.130401} is a machine learning algorithm that tries to find an hyperplain that maximizes the margin between itself and the closests points in the high dimensional space (these points are called \textit{support vectors}). In this case
+SVM works on a kernelized space with an \textit{rbf} kernel (Radial Basis Function), since the dataset is not linearly separable.
+We allow a certain soft margin where points can be misclassified around the classification hyperplane setting the \textit{C} parameter to 1.
+
+If an user wants to know the accuracy of the classifier, he can run the server putting the last parameter to 1, that makes the python program compute 3-fold cross validation on the trained algorithm. Using this dataset we reached an accuracy of 86\%.
+
+Once the web server receives the HTTP POST message from the Javascript code, it creates a new tuple to be added to \texttt{dataset.csv}. The new line is appended, and then the function calls all our python modules, that will re-compute all additional csv files, required by the interface.
 
 \section{Conclusion}
 

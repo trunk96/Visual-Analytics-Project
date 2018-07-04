@@ -1,5 +1,11 @@
 \begin{thebibliography}{1}
 
+\bibitem{Boser:1992:TAO:130385.130401}
+B.~E. Boser, I.~M. Guyon, and V.~N. Vapnik.
+\newblock A training algorithm for optimal margin classifiers.
+\newblock In {\em Proceedings of the Fifth Annual Workshop on Computational
+  Learning Theory}, COLT '92, pages 144--152, New York, NY, USA, 1992. ACM.
+
 \bibitem{UCI:2016}
 I.~C. Yeh.
 \newblock {UCI} machine learning repository, 2016.
