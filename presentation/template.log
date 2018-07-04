@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017/Debian) (preloaded format=latex 2018.4.26)  4 JUL 2018 23:19
+This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017/Debian) (preloaded format=latex 2018.4.26)  4 JUL 2018 23:26
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -342,12 +342,15 @@ LaTeX Font Info:    Try loading font information for OT1+pcr on input line 166.
  (/usr/share/texlive/texmf-dist/tex/latex/psnfss/ot1pcr.fd
 File: ot1pcr.fd 2001/06/04 font definitions for OT1/pcr.
 )
-[1
+Underfull \vbox (badness 7221) has occurred while \output is active []
+
+ [1
 
 
 ]
 File: scatterplot.eps Graphic file (type eps)
- <scatterplot.eps>
+
+<scatterplot.eps>
 File: parallel.eps Graphic file (type eps)
  <parallel.eps>
 
@@ -370,6 +373,9 @@ File: stacked.eps Graphic file (type eps)
 Overfull \hbox (7.1863pt too wide) in paragraph at lines 251--252
  [][] 
  []
+
+
+LaTeX Warning: `h' float specifier changed to `ht'.
 
 [2]
 File: age.eps Graphic file (type eps)
@@ -417,10 +423,10 @@ Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 348.
 Here is how much of TeX's memory you used:
  5182 strings out of 494840
  77409 string characters out of 6178710
- 164214 words of memory out of 5000000
+ 163214 words of memory out of 5000000
  8465 multiletter control sequences out of 15000+600000
  25235 words of font info for 59 fonts, out of 8000000 for 9000
  59 hyphenation exceptions out of 8191
  29i,8n,29p,483b,370s stack positions out of 5000i,500n,10000p,200000b,80000s
 
-Output written on template.dvi (4 pages, 31544 bytes).
+Output written on template.dvi (4 pages, 31540 bytes).
