@@ -305,7 +305,16 @@ At this point Javascript can make an alert message showing the ID returned and c
 
 \section{Conclusion}
 
+In this work we presented an intuitive tool that can be used in a financial institution to monitor the behaviour of the customers that have a credit card issued by the financial institution itself. It can be also useful in case
+the bank director has to decide to issue a new credit card to one of his customers, knowing the spending patterns and the bank account bills of that customer.
 
+The power of this tool is that it combines both machine learning and visual analytics methodologies, so a bank director can classify new instances using SVM classifier and validate the classification done using the visualization, and can also make a prediction
+without any use of machine learning algorithms, just comparing the new customer with similar ones yet present in the dataset, using all the view presented.
+
+Due to the high number of tuples present in the dataset, the visualization is a little bit crowded (in fact a lot of the visual elements presented do not scale very well as the number of tuples to be represented increases). At the same time the SVM classifier is
+very well trained since we have a lot of samples (it reaches the accuracy of 86\% with half of the original dataset from \cite{UCI:2016}).
+
+The high number of tuples makes also the interaction with the visualization a little bit glitchy but the latency experienced is still acceptable.
 
 
 \bibliographystyle{abbrv}
