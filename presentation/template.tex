@@ -164,7 +164,7 @@ The interface was tought to fit in a FullHD (1920x1080) screen, even if it works
 
 \subsection{Scatterplot}
 
-\begin{figure}
+\begin{figure}[h]
   \includegraphics[scale=0.15]{scatterplot}
   \caption{Scatterplot view of the tool}
   \label{scatterplot}
@@ -178,11 +178,48 @@ A 2D scatterplot is the best way to graphically represent the relation between p
 Each point has associated two event handlers. The first one allows to make visible a tooltip showing the identifier of the customer just by mouseovering over it; this handler also makes the point bigger to have it more visible.
 The second handler is associated to click events: by clicking on a point, it will highlight the point itself, will trigger the highlighting of the other related elements and will show up the corresponding lines in the linechart.
 
+Associated to the scatterplot is present a legend explaining the color encoding and clicking on an element of the legend, it is possible to see on the foreground all the points with that classification. Once an element is clicked, a reset button appears in order to
+restore the original view.
+
 \subsection{Parallel Coordinates}
-The first view that can be seen in the interface is the parallel coordinates chart. We have six axis, that correspond to the first
-six principal components given by the PCA algorithm applied on the original dataset. Each line referrs to one single point that is the
-graphic representation of a customer. Since each customer can have the target attribute equal to either 0 or 1, we have decided to use two colors to distinguish
-among default and correct users.
+\begin{figure}[h]
+  \centering
+  \includegraphics[scale=0.15]{parallel}
+  \caption{Parallel Coordinates view of the tool}
+  \label{parallel}
+\end{figure}
+
+Parallel Coordinate view is an efficient way to represent data with more than 2 dimensions in a 2D space. Moreover it allows to grasp relations between tuples (for example crossing lines may correspond to a linear relation on some axis).
+
+We have six axis, that correspond to the first
+six principal components given by the PCA algorithm applied on the original dataset (\texttt{dataset.csv}). Each line referrs to one single point that is the
+graphic representation of a customer. Also in this case we use the same color encoding as before to distinguish between default and correct customers.
+
+There is the possiblilty to click on a line to select it and see the corresponding point in the scatterplot highlighted togheter to all the related information (having the same behaviour we had by clicking on a point in the scatterplot)
+
+Moreover it is possible to exchange the order of the axis, dragging the axis that we want to move. Unfortunately, since the dataset contains a lot of tuples, the movement is a little bit glitchy.
+
+
+\subsection{Linechart}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[scale=0.15]{linechart}
+  \caption{Linechart view of the tool}
+  \label{linechart}
+\end{figure}
+
+Each customer has associated some numerical values that refer to a specific month. We decided to use a line chart to represent these attributes since they are temporal related data.
+We can distinguish two lines: the green one represents the amount of money the customer had in his bank account in the specified period, while the red one represents the payments that he did
+with his credit card.
+
+The values that are represented are often not of the same order of magnitude, so we had to compute a normalized version of the dataset (saved in \texttt{standardized\_data.csv}) using \texttt{Standardization.action()} function, that applies
+a \texttt{numpy} standard scaled to all these amounts.
+
+On the plot is also written the ID of the displayed customer and, since the values are normalized we thought it could be useful to retrieve the original amounts in some way. In fact on each line there are 6 circles that can be mouseovered in orderd to see in a tooltip
+the original value of that point, while on the y-axis are represented the normalized values.
+
+As soon as the page is loaded this view is empty and will be filled with the information described once a point in the scatterplot or a line in the parallel coordinates is selected.
 
 
 \section{Conclusion}
