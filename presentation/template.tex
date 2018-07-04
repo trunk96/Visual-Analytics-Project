@@ -296,7 +296,12 @@ We allow a certain soft margin where points can be misclassified around the clas
 
 If an user wants to know the accuracy of the classifier, he can run the server putting the last parameter to 1, that makes the python program compute 3-fold cross validation on the trained algorithm. Using this dataset we reached an accuracy of 86\%.
 
-Once the web server receives the HTTP POST message from the Javascript code, it creates a new tuple to be added to \texttt{dataset.csv}. The new line is appended, and then the function calls all our python modules, that will re-compute all additional csv files, required by the interface.
+Once the web server receives the HTTP POST message from the Javascript code, it creates a new tuple to be added to \texttt{dataset.csv} and it classify it using the pre-trained SVM classifier. The new line is appended, and then the function calls all our python modules,
+ that will re-compute all additional csv files (for example \texttt{*\_frequency.csv} and \texttt{*\_instances.csv}), required by the interface.
+
+
+At the end of the computation it returns to the Javascript code the ID associated to the newly added customer.
+At this point Javascript can make an alert message showing the ID returned and can highlight the point associated to this ID in the scatterplot.
 
 \section{Conclusion}
 

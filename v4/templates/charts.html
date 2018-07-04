@@ -1035,15 +1035,16 @@
 									.attr("transform", function(d, i) { return "translate(0," + ((i * 20)+50) + ")"; })
 										.attr("class", "legend-linechart")
 
-
+						var color2=d3.scaleOrdinal(d3.schemeCategory10);
+						color2(0);
+						color2(1);
 						legend.append("rect")
 							.attr("x", width - 45)
 							.attr("width", 19)
 							.attr("height", 19)
 							.attr("fill", function(d){
-								console.log(d)
-								if (d=="Bill Amounts") return color(2);
-								else return color(3);
+								if (d=="Bill Amounts") return color2(2);
+								else return color2(3);
 							})
 
 						legend.append("text")
@@ -1232,34 +1233,7 @@
 			.attr("class", "yaxis")
 			.call(amount_axis)
 
-		var legend = line_chart.append("g")
-			.attr("font-family", "sans-serif")
-			.attr("font-size", 10)
-			.attr("text-anchor", "start")
-			.selectAll("g")
-				.data(["Bill Amounts", "Payments"])
-				.enter().append("g")
-					.attr("transform", function(d, i) { return "translate(0," + ((i * 20)+50) + ")"; })
-						.attr("class", "legend-linechart")
 
-
-		legend.append("rect")
-			.attr("x", width - 45)
-			.attr("width", 19)
-			.attr("height", 19)
-			.attr("fill", function(d){
-				console.log(d)
-				if (d=="Bill Amounts") return color(2);
-				else return color(3);
-			})
-
-		legend.append("text")
-			.attr("x", width -19)
-			.attr("y", 9.5)
-			.attr("dy", "0.32em")
-			.text(function(d) {
-				return d;
-			})
 
 	}
 
@@ -1382,7 +1356,7 @@
 			.text("X2");
 
 		var legend = d3.select("svg").selectAll(".legend")
-			 .data(color.domain())
+			 .data([color.domain()[0], color.domain()[1]])
 			 .enter().append("g")
 			 .classed("legend", true)
 			 .attr("transform", function(d, i) {
