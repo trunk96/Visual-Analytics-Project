@@ -1,7 +1,24 @@
 \begin{thebibliography}{1}
 
+\bibitem{ajax:2018}
+Ajax documentation on jquery.
+\newblock \url{https://pandas.pydata.org/pandas-docs/stable/}.
+
 \bibitem{d3:2018}
 D3 api reference.
+\newblock \url{https://github.com/d3/d3/blob/master/API.md}.
+
+\bibitem{numpy:2018}
+numpy documentation.
+\newblock \url{https://docs.scipy.org/doc/}.
+
+\bibitem{pandas:2018}
+pandas documentation.
+\newblock \url{https://pandas.pydata.org/pandas-docs/stable/}.
+
+\bibitem{sklearn:2018}
+scikit-learn v0.19.1 documentation.
+\newblock \url{http://scikit-learn.org/stable/documentation.html}.
 
 \bibitem{Boser:1992:TAO:130385.130401}
 B.~E. Boser, I.~M. Guyon, and V.~N. Vapnik.
@@ -11,6 +28,9 @@ B.~E. Boser, I.~M. Guyon, and V.~N. Vapnik.
 
 \bibitem{UCI:2016}
 I.~C. Yeh.
-\newblock {UCI} machine learning repository, 2016.
+\newblock {UCI} machine learning repository.
+\newblock
+  \url{https://archive.ics.uci.edu/ml/datasets/default+of+credit+card+clients},
+  2016.
 
 \end{thebibliography}

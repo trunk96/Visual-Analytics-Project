@@ -29,6 +29,8 @@
 \usepackage{graphicx}
 \usepackage{times}
 
+
+
 %% We encourage the use of mathptmx for consistent usage of times font
 %% throughout the proceedings. However, if you encounter conflicts
 %% with other math-related packages, you may want to disable it.
@@ -48,6 +50,7 @@
   plainpages = false,
   linktocpage
 }
+\usepackage[hyphenbreaks]{breakurl}
 
 %% If you are submitting a paper to a conference for review with a double
 %% blind reviewing process, please replace the value ``0'' below with your
@@ -116,7 +119,7 @@ updating all views.
 
 %% Copyright space is enabled by default as required by guidelines.
 %% It is disabled by the 'review' option or via the following command:
-% \nocopyrightspace
+ \nocopyrightspace
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%% START OF THE PAPER %%%%%%%%%%%%%%%%%%%%%%
@@ -193,7 +196,7 @@ resolution supported is 1024x768).
 \end{figure}
 The scatterplot is the main view in the visualization. Each point represents a customer and the color encodes the classification of the customer (default or correct). The color scaling used is the \texttt{d3.scaleOrdinal(d3.schemeCategory10)}\cite{d3:2018}.
 
-Due to the high dimensionality of the dataset, it was mandatory to apply a dimensionality reduction algorithm. We decided to apply PCA because it is fast and it doesn't require a deep knowledge of the problem, and we then took the first 2 components. This work is done by the python function \texttt{pca.action()} using \texttt{pandas} to read and parse the csv original dataset
+Due to the high dimensionality of the dataset, it was mandatory to apply a dimensionality reduction algorithm. We decided to apply PCA \cite{sklearn:2018} because it is fast and it doesn't require a deep knowledge of the problem, and we then took the first 2 components. This work is done by the python function \texttt{pca.action()} using \texttt{pandas} \cite{pandas:2018} to read and parse the csv original dataset
 and \texttt{sklearn} to compute PCA values. The result is saved in \texttt{pca.csv}.
 
 A 2D scatterplot is the best way to graphically represent the relation between points and to spot possible clusters. In this case it helps the bank director to quickly see that most of the bad customers are grouped together in a particular area (in figure \ref{scatterplot} in the left-bottom part of the plot).
@@ -238,7 +241,7 @@ We can distinguish two lines: the green one represents the amount of money the c
 with his credit card.
 
 The values that are represented are often not of the same order of magnitude, so we had to compute a normalized version of the dataset (saved in \texttt{standardized\_data.csv}) using \texttt{Standardization.action()} function, that applies
-a \texttt{numpy} standard scaler to all these amounts.
+a \texttt{numpy} standard scaler \cite{numpy:2018} to all these amounts.
 
 On the plot is also written the ID of the displayed customer and, since the values are normalized, we thought it could be useful to retrieve the original amounts in some way. In fact on each line there are 6 circles that can be mouseovered in orderd to see in a tooltip
 the original value of that point, while on the y-axis are represented the normalized values.
@@ -311,10 +314,10 @@ Since Javascript is not so fast handling large amount of data and it is not suit
 To do so, we set up a small web server using the python library \texttt{flask} (that runs locally on our machines) that can communicate with the visualization.
 
 The visualization can be accessed after the server is started at the address \texttt{http://127.0.0.1:5000} (or \texttt{http://localhost:5000}). It is now possible to pass every field value of the form
-using AJAX call. AJAX sends an HTTP POST message to a fixed route of our web server, that contains a JSON payload that includes all fields.
+using AJAX call \cite{ajax:2018}. AJAX sends an HTTP POST message to a fixed route of our web server, that contains a JSON payload that includes all fields.
 
 As soon as the web server is started, it starts training an SVM learner with all the pre-classified instances present in the original dataset (\texttt{dataset.csv}).
-SVM (Support Vector Machine) \cite{Boser:1992:TAO:130385.130401} is a machine learning algorithm that tries to find an hyperplain that maximizes the margin between itself and the closest points in the high dimensional space (these points are called \textit{support vectors}). In this case
+SVM (Support Vector Machine) \cite{Boser:1992:TAO:130385.130401} \cite{sklearn:2018} is a machine learning algorithm that tries to find an hyperplain that maximizes the margin between itself and the closest points in the high dimensional space (these points are called \textit{support vectors}). In this case
 SVM works on a kernelized space with an \textit{rbf} kernel (Radial Basis Function), since the dataset is not linearly separable.
 We allow a certain soft margin where points can be misclassified around the classification hyperplane setting the \textit{C} parameter to 1.
 

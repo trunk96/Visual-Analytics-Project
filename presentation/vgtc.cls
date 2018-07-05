@@ -52,7 +52,7 @@
 \newif\ifvgtc@review
 \newif\ifvgtc@doublespaced
 \newif\ifvgtc@wide                    \vgtc@widefalse
-\newif\ifhavecopyrightspace           \havecopyrightspacetrue
+\newif\ifhavecopyrightspace           \havecopyrightspacefalse
 \newif\ifvgtcjournal                  \vgtcjournalfalse
 \newif\iftvcgsize                     \tvcgsizefalse
 
@@ -112,7 +112,8 @@
 % 'journal' option
 \DeclareOption{journal}{%
    \vgtcjournaltrue %
-   \@twosidetrue  \@mparswitchtrue %
+   \@twosidetrue  \@mparswitchtrue%
+   \havecopyrightspacefalse
    %\ExecuteOptions{tvcgpapersize}
 }
 
@@ -252,18 +253,18 @@
 %\newcommand{\journalid}[1]{\renewcommand{\journalidtxt}{#1}}
 
 %Comment from here
-\newcommand{\manuscriptnotetxt}{
-Manuscript received xx xxx. 201x; accepted xx xxx. 201x. Date of \par
-Publication xx xxx. 201x; date of current version xx xxx. 201x.\par
-For information on obtaining reprints of this article, please send \par
-e-mail to: reprints@ieee.org.\par
-Digital Object Identifier: xx.xxxx/TVCG.201x.xxxxxxx/
-}
+%\newcommand{\manuscriptnotetxt}{
+%Manuscript received xx xxx. 201x; accepted xx xxx. 201x. Date of \par
+%Publication xx xxx. 201x; date of current version xx xxx. 201x.\par
+%For information on obtaining reprints of this article, please send \par
+%e-mail to: reprints@ieee.org.\par
+%Digital Object Identifier: xx.xxxx/TVCG.201x.xxxxxxx/
+%}
 %% to here to not use the blank
 
 %% NOTE FOR BLANK SPACING
 %% uncomment from here
-%\newcommand{\manuscriptnotetxt}{\vspace{.25in}}
+\newcommand{\manuscriptnotetxt}{\vspace{.25in}}
 %%  to here
 \newcommand{\manuscriptnote}[1]{\renewcommand{\manuscriptnotetxt}{#1}}
 \newcommand{\copyrighttext}{}
@@ -640,26 +641,26 @@ Digital Object Identifier: xx.xxxx/TVCG.201x.xxxxxxx/
    \fi%
    \ifvgtcjournal% no copyrightspace for journal, but authorfooter
      \ifvgtc@review\else
-       \renewcommand{\thefootnote}{}%
-       \footnotetext[0]{
-         \begin{flushleft}
-         \vskip -6pt
-         \begin{list}{\textbullet}{
-           \setlength{\partopsep}{0pt}
-           \setlength{\topsep}{0pt}
-           \setlength{\itemsep}{-2pt}
-           \setlength{\itemindent}{-4pt}
-           \setlength{\leftmargin}{12pt}}
-           \authorfootertext
-         \end{list}
-         \vskip 4pt
-         \ifvgtc@preprint\else\textit{\manuscriptnotetxt}\fi
-         \end{flushleft}
-       }%
-       \renewcommand{\thefootnote}{\arabic{footnote}}
+       %\renewcommand{\thefootnote}{}%
+       %\footnotetext[0]{
+        % \begin{flushleft}
+         %\vskip -6pt
+         %\begin{list}{\textbullet}{
+          % \setlength{\partopsep}{0pt}
+           %\setlength{\topsep}{0pt}
+           %\setlength{\itemsep}{-2pt}
+           %\setlength{\itemindent}{-4pt}
+           %\setlength{\leftmargin}{12pt}}
+           %\authorfootertext
+         %\end{list}
+         %\vskip 4pt
+         %\ifvgtc@preprint\else\textit{\manuscriptnotetxt}\fi
+         %\end{flushleft}
+       %}%
+      % \renewcommand{\thefootnote}{\arabic{footnote}}
      \fi
    \else%
-       \ifhavecopyrightspace\copyrightspace\fi%
+       \ifhavecopyrightspace \fi%
        \ifx\vgtc@abstxt\vgtc@empty \else%
             \begingroup%
                 \begin{origabstract} \vgtc@abstxt \end{origabstract} %
