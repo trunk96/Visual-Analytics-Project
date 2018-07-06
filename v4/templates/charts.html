@@ -882,7 +882,7 @@
 		}
 
 		var points = d3.select("#scatterplot").selectAll("circle").filter(function() {
-			return this.getAttribute("fill") == "red"
+			return this.getAttribute("fill") == "red" && this.getAttribute("identifier")!=d.ID
 		})
 		for (i=0;i<points["_groups"][0].length;i++) {
 			points["_groups"][0][i].setAttribute("fill",color(points["_groups"][0][i].getAttribute("target")))
